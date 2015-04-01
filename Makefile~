@@ -8,4 +8,8 @@ hello:   test.l test.y
 clean:
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
 
-
+push:
+	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
+	git add .
+	git commit -a -m "Pushed from Make File"
+	git push origin master

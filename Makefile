@@ -12,4 +12,5 @@ push:
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
 	git add .
 	git commit -a -m "Pushed from Make File"
+	git pull origin master
 	git push origin master

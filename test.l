@@ -6,6 +6,13 @@
 %%
 stop    			return STOP;
 start   			return START;
-[0123456789]+          	return NUMBER;
-[a-zA-Z][a-zA-Z]*  	return WORD;
+cd  				return CD;
+[0123456789]+       { 
+						yylval.d = atoi(yytext); 
+						return NUMBER; 
+					}
+[a-zA-Z][a-zA-Z]*  	{ 
+						yylval.a = yytext; 
+						return WORD; 
+					}
 %%

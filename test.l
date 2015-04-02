@@ -4,15 +4,21 @@
 %}
 
 %%
+
+[ \t]+				;
+
 stop    			return STOP;
 start   			return START;
 cd  				return CD;
-[0123456789]+       { 
+ls					return LS;
+
+[0-9]+       		{ 
 						yylval.d = atoi(yytext); 
 						return NUMBER; 
 					}
-[a-zA-Z][a-zA-Z]*  	{ 
+[a-zA-Z/][a-zA-Z0-9/]*  	{ 
 						yylval.a = yytext; 
 						return WORD; 
 					}
+[\n]+				return EOL;
 %%

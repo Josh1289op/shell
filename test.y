@@ -3,7 +3,7 @@
 
 void yyerror(const char *str)
 {
-        fprintf(stderr,"error: %s",str);
+        fprintf(stderr,"error: %s\n",str);
 }
  
 int yywrap()
@@ -14,7 +14,7 @@ int yywrap()
 
 %}
 
-%token STOP START CD NUMBER WORD
+%token STOP START CD LS NUMBER WORD EOL
 %union {
 
   char *a;
@@ -30,29 +30,36 @@ commands: /* empty */
 
 command:
 		change_dir
-		|
-        start_com
-        |
-        stop_com
+        | list_files
+		| start_com
+        | stop_com
+        | eol_com
         ;
+
 change_dir:
-		CD WORD
-		{
-			cd = 1;
-			changeDirectory = yylval.a;
-			printf("\t change_dir init cd = 1");
-			return;
-		}
-start_com:
-         START
-        {
-                printf("\t START \n");
-        }
+        CD EOL      { cd = 1; word = "home"; return;}
+		| CD WORD	{ cd = 1; word = yylval.a; return;}
         ;
+
+list_files:
+        LS
+
+start_com:
+        START
+            {
+                    printf("\t START");
+                    return;
+            }
+        ;
+
 stop_com:
         STOP
-        {
-                printf("\t STOP \n");
-        }
+            {
+                    printf("\t STOP\n");
+                    exit(0);
+            }
         ;
+
+eol_com:
+        EOL     {return;}
 %%

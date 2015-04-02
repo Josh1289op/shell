@@ -1,11 +1,12 @@
 %{
 #include "global.h"
+ extern int line_num;
 
-void yyerror(const char *str)
+ void yyerror(const char *str)
 {
-        fprintf(stderr,"error: %s\n",str);
+        fprintf(stderr,"error: %s\n",  str);
 }
- 
+
 int yywrap()
 {
         return 1;
@@ -14,7 +15,7 @@ int yywrap()
 
 %}
 
-%token STOP START CD LS NUMBER WORD EOL
+%token START CD LS NUMBER WORD EOL STOP
 %union {
 
   char *a;
@@ -33,33 +34,27 @@ command:
         | list_files
 		| start_com
         | stop_com
-        | eol_com
+        | unknown_com
         ;
 
 change_dir:
-        CD EOL      { cd = 1; word = "home"; return;}
-		| CD WORD	{ cd = 1; word = yylval.a; return;}
+        change_dir WORD  { isBuiltin = true; word = yylval.a; builtin = CDPath; }
+		| CD         { isBuiltin = true; word = "home"; builtin = CDHome; }
         ;
 
 list_files:
         LS
 
 start_com:
-        START
-            {
-                    printf("\t START");
-                    return;
-            }
+        START {  isBuiltin = true; word = "start"; builtin = Start; }
         ;
 
 stop_com:
-        STOP
-            {
-                    printf("\t STOP\n");
-                    exit(0);
-            }
+        STOP { isBuiltin = true; word = "stop"; builtin = Stop; }
         ;
 
-eol_com:
-        EOL     {return;}
+
+
+unknown_com:
+        WORD { printf("command not recognized in .y: %s\n", yylval.a); }
 %%

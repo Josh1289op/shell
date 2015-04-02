@@ -1,12 +1,12 @@
 #include "global.h"
 
 void main() {
-	cd = 0;
     
     init();
 	while(1){
 		prompt();
-		switch(getCommand()){
+		int CMD = getCommand();
+		switch(CMD){
 			case BYE:
 				exit(0);
 			case ERROR:
@@ -20,6 +20,7 @@ void main() {
 void init(){
 	get_curr_dir();
 	home = getenv("HOME");
+	
 	// init all variables. 
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)
@@ -36,25 +37,48 @@ void prompt(){
 }
 
 int getCommand(){
-	//initialize parse and int. set what variable builtin is
-	if (yyparse()) 
+	init_Scanner_Parser();
+	if (!yyparse()) 
 		return understand_errors();
-	else
+	else if (builtin == Stop) {
+		printf("%s", word);
+		return BYE;
+	} else {
 		return OK;
+	}
+}
+
+void init_Scanner_Parser(){
+	get_curr_dir();
+	home = getenv("HOME");
+	int cd = 0;
+	char* word = "";
+	char cwd[1024] = "";
+	int builtin = -1;
+	int isBuiltin = true;
 }
 
 void processCommand(){
-	if (builtin) 
+	if (isBuiltin) {
 		do_it();		// run built-in commands – no fork
 						// no exec; only your code + Unix
 						//system calls. 
-	else 
+	} else {
 		execute_it();	// execute general commands
 						//using fork and exec
+	}
 }
 
 void do_it() {
 	switch (builtin) {
+		case CDHome:
+				changeDirectory(true); break;
+		case CDPath:
+				changeDirectory(false); break;
+		case Start:
+				printf("%s", word); break;
+		default:
+				printf("command not recognized in c\n");
 	  /*case ALIAS:	// e.g., alias(); alias(name, word);
 	  case CDHome: 	// e.g., gohome();
 	  case CDPath:	// e.g., chdir(path);	
@@ -114,8 +138,8 @@ char* get_curr_dir() {
 	return cwd;
 }
 
-void changeDirectory(char* word) {
-	if(strcmp(word, "home") == 0){
+void changeDirectory(int goHome) {
+	if(goHome){
 		cd = chdir(home);
 	} else {
 		cd = chdir(word);

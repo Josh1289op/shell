@@ -13,6 +13,14 @@
 #define OK 0
 #define BYE 1
 #define ERROR -1
+#define true 1
+#define false 0
+
+#define CDHome 1
+#define CDPath 2
+#define Start 3
+#define Stop 4
+
 
 void init();
 void prompt();
@@ -23,12 +31,14 @@ void do_it();
 void execute_it();
 void handle_errors();
 int understand_errors();
+void init_Scanner_Parser();
 
 char* get_curr_dir();
-void changeDirectory(char *word);
+void changeDirectory(int);
 
 int cd;
 char* word;
 char cwd[1024];
 const char* home;
 int builtin;
+int isBuiltin;

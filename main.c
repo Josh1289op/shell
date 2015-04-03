@@ -23,7 +23,7 @@ void main() {
 }
 
 void init(){
-  yydebug=1;
+  //yydebug=1;
 	get_curr_dir();
 	home = getenv("HOME");
   int isCommand = 0;
@@ -82,12 +82,22 @@ void do_it() {
     printf("Command = %s\n", cmd);
     if(strcmp(cmd,"cd") == 0){
       changeDirectory(1);
+    }else if(strcmp(cmd, "printenv") == 0){
+
     }
   }else if(isCommandValue) {
     isCommandValue = 0;
     printf("Command Value = %s %s\n", cmd, value);
     if(strcmp(cmd,"cd") == 0){
       changeDirectory(0);
+    }else if(strcmp(cmd, "setenv") == 0){
+      //setenv variable value
+      setenv (value, value, 1);
+    }else if(strcmp(cmd, "unsetenv") == 0){
+
+    }else if(strcmp(cmd, "getenv") == 0){
+      //get a variable value
+      run_getenv(value);
     }
   }
 }
@@ -154,4 +164,17 @@ void changeDirectory(int goHome) {
 		//execlp("ls", "ls", "-l",(char *) NULL );
 		//printf("chdir(%s) succeeded", word);
 	}
+}
+
+void run_getenv (char * name)
+{
+    char * value;
+
+    value = getenv (name);
+    if (! value) {
+        printf ("'%s' is not set.\n", name);
+    }
+    else {
+        printf ("%s = %s\n", name, value);
+    }
 }

@@ -27,6 +27,7 @@
 void init();
 void prompt();
 
+void run_getenv (char * name);
 int getCommand();
 void processCommand();
 void do_it();

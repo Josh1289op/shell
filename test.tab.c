@@ -64,7 +64,7 @@
 /* Copy the first part of user declarations.  */
 #line 1 "test.y" /* yacc.c:339  */
 
-#define YYDEBUG 1
+//#define YYDEBUG 1
 #include "global.h"
 #define YYSTYPE char *
 extern int line_num;

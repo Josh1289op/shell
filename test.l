@@ -1,25 +1,22 @@
 %{
 #include <stdio.h>
 #include "test.tab.h"
+extern YYSTYPE yylval;
+
 
 int line_num = 1;
 %}
 
 %%
 
-[ \t]*				;
-start   			return START;
-cd  				return CD;
-ls					return LS;
+ls|cd     { yylval = strdup(yytext); return COMMAND; }
 
-stop    			return STOP;
-end    				return STOP;
-exit    			return STOP;
-halt    			return STOP;
+[A-Za-z0-9]+    { yylval = strdup(yytext); return VALUE; }
 
-[0-9]+       		{ yylval.d = atoi(yytext); return NUMBER; };
-[a-zA-Z\/][a-zA-Z0-9\/]*[^\n]  	{ yylval.a = yytext; return WORD; };
+-[A-Za-z0-9]+   { yylval = strdup(yytext); return OPTION; }
 
-\n				{ ++line_num; return EOL; }
+[ \t]   /* ignore whitespace */ ;
+
+\n { return EOL; }
 
 %%

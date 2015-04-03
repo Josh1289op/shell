@@ -10,11 +10,13 @@
 #define KGRY  "\x1B[37m"
 #define KCYN  "\x1B[36m"
 
+
 #define OK 0
 #define BYE 1
 #define ERROR -1
 #define true 1
 #define false 0
+
 
 #define CDHome 1
 #define CDPath 2
@@ -39,6 +41,10 @@ void changeDirectory(int);
 int cd;
 char* word;
 char cwd[1024];
+char * cmd;
+char * value;
 const char* home;
 int builtin;
 int isBuiltin;
+int isCommand;
+int isCommandValue;

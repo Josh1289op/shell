@@ -1,11 +1,16 @@
 #include "global.h"
 
+
+extern int yydebug;
+
+
 void main() {
-    
-    init();
+
+  init();
 	while(1){
 		prompt();
 		int CMD = getCommand();
+    printf("\n\n%d\n\n", CMD);
 		switch(CMD){
 			case BYE:
 				exit(0);
@@ -18,15 +23,17 @@ void main() {
 }
 
 void init(){
+  yydebug=1;
 	get_curr_dir();
 	home = getenv("HOME");
-	
-	// init all variables. 
+  int isCommand = 0;
+  int isCommandValue = 0;
+	// init all variables.
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)
 	// get PATH environment variable (use getenv())
 	// get HOME env variable (also use getenv())
-	// disable anything that can kill your shell. 
+	// disable anything that can kill your shell.
 	// (the shell should never die; only can be exit)
 	// do anything you feel should be done as init
 }
@@ -38,7 +45,7 @@ void prompt(){
 
 int getCommand(){
 	init_Scanner_Parser();
-	if (!yyparse()) 
+	if (yyparse())
 		return understand_errors();
 	else if (builtin == Stop) {
 		printf("%s", word);
@@ -62,7 +69,7 @@ void processCommand(){
 	if (isBuiltin) {
 		do_it();		// run built-in commands – no fork
 						// no exec; only your code + Unix
-						//system calls. 
+						//system calls.
 	} else {
 		execute_it();	// execute general commands
 						//using fork and exec
@@ -70,41 +77,37 @@ void processCommand(){
 }
 
 void do_it() {
-	switch (builtin) {
-		case CDHome:
-				changeDirectory(true); break;
-		case CDPath:
-				changeDirectory(false); break;
-		case Start:
-				printf("%s", word); break;
-		default:
-				printf("command not recognized in c\n");
-	  /*case ALIAS:	// e.g., alias(); alias(name, word);
-	  case CDHome: 	// e.g., gohome();
-	  case CDPath:	// e.g., chdir(path);	
-	  case UNALIAS:
-	  case SETENV:
-	  case PRINTENV:*/
-	  //...
-	}
+  if(isCommand){
+    isCommand = 0;
+    printf("Command = %s\n", cmd);
+    if(strcmp(cmd,"cd") == 0){
+      changeDirectory(1);
+    }
+  }else if(isCommandValue) {
+    isCommandValue = 0;
+    printf("Command Value = %s %s\n", cmd, value);
+    if(strcmp(cmd,"cd") == 0){
+      changeDirectory(0);
+    }
+  }
 }
 
 void execute_it(){
 	//CHECK SLIDES FOR MORE CODE EXAMPLES ON THIS METHOD/////////////////////////////
 
-	// Handle  command execution, pipelining, i/o redirection, and background processing. 
-	// Utilize a command table whose components are plugged in during parsing by yacc. 
+	// Handle  command execution, pipelining, i/o redirection, and background processing.
+	// Utilize a command table whose components are plugged in during parsing by yacc.
 
-	/* 
+	/*
 	 * Check Command Accessability and Executability
 	*/
 
-	
+
 	/*
 	 * Check io file existence in case of io-redirection.
 	*/
-	
-	//Build up the pipeline (create and set up pipe end points (using pipe, dup) 
+
+	//Build up the pipeline (create and set up pipe end points (using pipe, dup)
 	//Process background
 }
 
@@ -142,9 +145,9 @@ void changeDirectory(int goHome) {
 	if(goHome){
 		cd = chdir(home);
 	} else {
-		cd = chdir(word);
+		cd = chdir(value);
 	}
-	
+
 	if(cd == -1){
 		fprintf(stdout, "directory %s/%s not found\n", get_curr_dir(), word);
 	}else{

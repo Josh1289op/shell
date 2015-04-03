@@ -1,8 +1,11 @@
 %{
+#define YYDEBUG 1
 #include "global.h"
- extern int line_num;
+#define YYSTYPE char *
+extern int line_num;
+extern int isCommand, isCommandValue;
 
- void yyerror(const char *str)
+  void yyerror(const char *str)
 {
         fprintf(stderr,"error: %s\n",  str);
 }
@@ -10,51 +13,22 @@
 int yywrap()
 {
         return 1;
-} 
-  
+}
+
 
 %}
 
-%token START CD LS NUMBER WORD EOL STOP
-%union {
-
-  char *a;
-
-  double d;
-
-  int fn;
-} 
+%token COMMAND VALUE OPTION EOL
 %%
-commands: /* empty */
-        | commands command
-        ;
 
-command:
-		change_dir
-        | list_files
-		| start_com
-        | stop_com
-        | unknown_com
-        ;
+start: command EOL  { return 0; }
 
-change_dir:
-        change_dir WORD  { isBuiltin = true; word = yylval.a; builtin = CDPath; }
-		| CD         { isBuiltin = true; word = "home"; builtin = CDHome; }
-        ;
+command: COMMAND  axis {printf("Command %s\n", $1);}
+      | COMMAND { printf("Command %s\n", $1); isBuiltin = true; isCommand = 1; cmd = $1;}
+      | COMMAND VALUE { printf("COMMAND VALUE %s %s \n", $1, $2); isBuiltin = true; isCommandValue = 1; cmd = $1; value = $2;};
 
-list_files:
-        LS
+axis: inter | axis inter ;
 
-start_com:
-        START {  isBuiltin = true; word = "start"; builtin = Start; }
-        ;
-
-stop_com:
-        STOP { isBuiltin = true; word = "stop"; builtin = Stop; }
-        ;
-
-
-
-unknown_com:
-        WORD { printf("command not recognized in .y: %s\n", yylval.a); }
+inter: VALUE  {printf("Inter value %s\n", $1);}
+       | OPTION {printf("Inter option %s\n", $1);}
 %%

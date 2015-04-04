@@ -3,14 +3,13 @@
 
 extern int yydebug;
 
+void main(int argc, char **argv, char** environ) {
 
-void main() {
-
-  init();
+  init(environ);
 	while(1){
 		prompt();
 		int CMD = getCommand();
-    	//printf("\n\n%d\n\n", CMD);
+    	printf("CMD Value = %d\n", CMD);
 		switch(CMD){
 			case BYE:
 				exit(0);
@@ -22,12 +21,22 @@ void main() {
 	}
 }
 
-void init(){
-   //yydebug=1;
+void init(char ** envp){
+  //yydebug=1;
+  environment = envp;
+  valuecount = 0;
 	get_curr_dir();
 	home = getenv("HOME");
   int isCommand = 0;
   int isCommandValue = 0;
+  environmentcount = 0;
+  char** env;
+  for (env = environment; *env != 0; env++)
+  {
+    char* thisEnv = *env;
+    ++environmentcount;
+  }
+  printf("%d", environmentcount);
 	// init all variables.
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)
@@ -40,6 +49,7 @@ void init(){
 
 void prompt(){
 	get_curr_dir();
+  valuecount = 0;
 	printf("%s\nasShell:%s%s%s>%s", KCYN, KGRY, cwd, KCYN, KNRM);
 }
 
@@ -77,17 +87,37 @@ void processCommand(){
 }
 
 void do_it() {
-  if(isCommand){
+  if(!isCommandValue){
     isCommand = 0;
     printf("Command = %s\n", cmd);
     if(strcmp(cmd,"cd") == 0){
-      changeDirectory(1);
+      char * garbage;
+      changeDirectory(1, garbage);
+    }else if(strcmp(cmd, "printenv") == 0){
+      char** env;
+      for (env = environment; *env != 0; env++)
+      {
+        char* thisEnv = *env;
+        printf("%s\n", thisEnv);
+      }
+    }else if(strcmp(cmd, "bye") == 0){
+      exit(0);
     }
-  }else if(isCommandValue) {
+  }else {
     isCommandValue = 0;
-    printf("Command Value = %s %s\n", cmd, value);
+    printf("Command Value = %s %s %s %s\n", cmd, value[0], value[1], value[2]);
     if(strcmp(cmd,"cd") == 0){
-      changeDirectory(0);
+      changeDirectory(0, value[0]);
+    }else if(strcmp(cmd, "setenv") == 0){
+      //setenv variable value
+      setenv (value[0], value[1], 1);
+      run_getenv(value[0]);
+
+    }else if(strcmp(cmd, "unsetenv") == 0){
+      unsetenv(value[0]);
+    }else if(strcmp(cmd, "getenv") == 0){
+      //get a variable value
+      run_getenv(value[0]);
     }
   }
 }
@@ -141,11 +171,11 @@ char* get_curr_dir() {
 	return cwd;
 }
 
-void changeDirectory(int goHome) {
+void changeDirectory(int goHome, char * dir) {
 	if(goHome){
 		cd = chdir(home);
 	} else {
-		cd = chdir(value);
+		cd = chdir(dir);
 	}
 
 	if(cd == -1){
@@ -154,4 +184,17 @@ void changeDirectory(int goHome) {
 		//execlp("ls", "ls", "-l",(char *) NULL );
 		//printf("chdir(%s) succeeded", word);
 	}
+}
+
+void run_getenv (char * name)
+{
+    char * value;
+
+    value = getenv (name);
+    if (! value) {
+        printf ("'%s' is not set.\n", name);
+    }
+    else {
+        printf ("%s = %s\n", name, value);
+    }
 }

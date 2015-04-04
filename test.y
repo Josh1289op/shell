@@ -1,9 +1,5 @@
 %{
-<<<<<<< HEAD
 #define YYDEBUG 0
-=======
-//#define YYDEBUG 1
->>>>>>> 525d0946e1e0f1c57d2fa36c996ee2bd8721e127
 #include "global.h"
 #define YYSTYPE char *
 extern int line_num;

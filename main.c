@@ -77,7 +77,8 @@ void setBuiltins(){
 		|| strcmp(curCmd.name,"printenv") == 0
 		|| strcmp(curCmd.name,"getenv") == 0
 		|| strcmp(curCmd.name,"setenv") == 0
-		|| strcmp(curCmd.name,"unsetenv") == 0) 
+		|| strcmp(curCmd.name,"unsetenv") == 0
+		|| strcmp(curCmd.name,"exit") == 0) 
 	{
 		curCmd.isBuiltin = true;
 		printf("isBuiltin = true\n");
@@ -134,18 +135,30 @@ void execute_it(){
 
 	// Handle  command execution, pipelining, i/o redirection, and background processing.
 	// Utilize a command table whose components are plugged in during parsing by yacc.
-
-	/*
-	 * Check Command Accessability and Executability
-	*/
-
-
-	/*
-	 * Check io file existence in case of io-redirection.
-	*/
-
-	//Build up the pipeline (create and set up pipe end points (using pipe, dup)
-	//Process background
+	if(!isCommandValue){
+	    printf("Command = %s\n", curCmd.name);
+	    if(strcmp(curCmd.name,"ls") == 0){
+			execlp("ls", "ls",(char *) NULL );
+	    } else if(strcmp(curCmd.name, "x") == 0){
+	      	
+	    } else if(strcmp(curCmd.name, "x") == 0){
+	      	
+	    }
+  	} else {
+	    isCommandValue = false;
+	    printf("Command Value = %s %s %s %s\n", curCmd.name, value[0], value[1], value[2]);
+	    if(strcmp(curCmd.name,"ls") == 0){
+	      	if(strcmp(curCmd.opt,"-l") == 0){
+				execlp("ls", "ls", "-l",(char *) NULL );
+	      	}
+	    }else if(strcmp(curCmd.name, "x") == 0){
+	      	
+	    } else if(strcmp(curCmd.name, "x") == 0){
+	      	
+	    }else if(strcmp(curCmd.name, "x") == 0){
+	      	
+	    }
+  	}
 }
 
 

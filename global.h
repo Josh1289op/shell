@@ -37,6 +37,7 @@ void changeDirectory(int, char *);
 
 typedef struct _CMD {
 	char* name;
+	char* opt;
 	int isBuiltin;
 } cmd;
 

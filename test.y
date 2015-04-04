@@ -3,7 +3,7 @@
 #include "global.h"
 #define YYSTYPE char *
 extern int line_num;
-extern int isCommand, isCommandValue, valuecount;
+extern int isCommandValue, valuecount;
 
   void yyerror(const char *str)
 {
@@ -34,5 +34,8 @@ inter: VALUE  { printf("Inter value %s\n", $1);
                 isCommandValue = true; 
                 value[valuecount++] = $1;
               }
-       | OPTION { printf("Inter option %s\n", $1); }
+       | OPTION { printf("Inter option %s\n", $1);
+       			  isCommandValue = true;
+       			  value[valuecount++] = $1;
+       			}
 %%

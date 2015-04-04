@@ -18,12 +18,6 @@
 #define false 0
 
 
-#define CDHome 1
-#define CDPath 2
-#define Start 3
-#define Stop 4
-
-
 void init(char**);
 void prompt();
 
@@ -40,16 +34,17 @@ void init_Scanner_Parser();
 char* get_curr_dir();
 void changeDirectory(int, char *);
 
+typedef struct _CMD {
+	char* name;
+	int type;
+} cmd;
+
 int cd;
-char* word;
 char cwd[1024];
-char * cmd;
 char * value[1000];
 int valuecount;
 char ** environment;
 int environmentcount;
 const char* home;
-int builtin;
 int isBuiltin;
-int isCommand;
 int isCommandValue;

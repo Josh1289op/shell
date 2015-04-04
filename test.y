@@ -7,7 +7,7 @@ extern int isCommand, isCommandValue, valuecount;
 
   void yyerror(const char *str)
 {
-        fprintf(stderr,"error: %s\n",  str);
+        //fprintf(stderr,"error: %s\n",  str);
 }
 
 int yywrap()
@@ -18,18 +18,20 @@ int yywrap()
 
 %}
 
-%token COMMAND VALUE OPTION EOL
+%token COMMAND VALUE OPTION EOL 
+
 %%
 
 start: command EOL  { return 0; }
 
-command: COMMAND  axis {printf("Command %s\n", $1); isBuiltin = true; cmd = $1;}
+command:  { cmd = "empty"; }
+	  |	COMMAND  axis {printf("Command %s\n", $1); isBuiltin = true; cmd = $1;}
       | COMMAND { printf("Command %s\n", $1); isBuiltin = true; cmd = $1;};
 
 axis: inter | axis inter ;
 
 inter: VALUE  {printf("Inter value %s\n", $1);
-               isBuiltin = true; isCommandValue = 1; value[valuecount++] = $1;
+               isBuiltin = true; isCommandValue = true; value[valuecount++] = $1;
               }
        | OPTION {printf("Inter option %s\n", $1);}
 %%

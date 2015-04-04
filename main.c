@@ -9,13 +9,15 @@ void main(int argc, char **argv, char** environ) {
 	while(1){
 		prompt();
 		int CMD = getCommand();
-    	printf("CMD Value = %d\n", CMD);
 		switch(CMD){
 			case BYE:
+			printf("CMD case: BYE\n");
 				exit(0);
 			case ERROR:
+				printf("CMD case: ERROR\n");
 				handle_errors(); break;
 			case OK:
+				printf("CMD case: OK\n");
 				processCommand(); break;
 		}
 	}
@@ -27,8 +29,7 @@ void init(char ** envp){
   valuecount = 0;
 	get_curr_dir();
 	home = getenv("HOME");
-  int isCommand = 0;
-  int isCommandValue = 0;
+  int isCommandValue = false;
   environmentcount = 0;
   char** env;
   for (env = environment; *env != 0; env++)
@@ -36,7 +37,7 @@ void init(char ** envp){
     char* thisEnv = *env;
     ++environmentcount;
   }
-  printf("%d", environmentcount);
+  printf("%d\n", environmentcount);
 	// init all variables.
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)
@@ -50,15 +51,14 @@ void init(char ** envp){
 void prompt(){
 	get_curr_dir();
   valuecount = 0;
-	printf("%s\nasShell:%s%s%s>%s", KCYN, KGRY, cwd, KCYN, KNRM);
+	printf("%sasShell:%s%s%s>%s", KCYN, KGRY, cwd, KCYN, KNRM);
 }
 
 int getCommand(){
 	init_Scanner_Parser();
 	if (yyparse())
 		return understand_errors();
-	else if (builtin == Stop) {
-		printf("%s", word);
+	else if (strcmp(cmd,"stop") == 0) {
 		return BYE;
 	} else {
 		return OK;
@@ -69,9 +69,7 @@ void init_Scanner_Parser(){
 	get_curr_dir();
 	home = getenv("HOME");
 	int cd = 0;
-	char* word = "";
 	char cwd[1024] = "";
-	int builtin = -1;
 	int isBuiltin = true;
 }
 
@@ -88,11 +86,10 @@ void processCommand(){
 
 void do_it() {
   if(!isCommandValue){
-    isCommand = 0;
     printf("Command = %s\n", cmd);
     if(strcmp(cmd,"cd") == 0){
       char * garbage;
-      changeDirectory(1, garbage);
+      changeDirectory(true, garbage);
     }else if(strcmp(cmd, "printenv") == 0){
       char** env;
       for (env = environment; *env != 0; env++)
@@ -104,13 +101,13 @@ void do_it() {
       exit(0);
     }
   }else {
-    isCommandValue = 0;
+    isCommandValue = false;
     printf("Command Value = %s %s %s %s\n", cmd, value[0], value[1], value[2]);
     if(strcmp(cmd,"cd") == 0){
-      changeDirectory(0, value[0]);
+      changeDirectory(false, value[0]);
     }else if(strcmp(cmd, "setenv") == 0){
       //setenv variable value
-      setenv (value[0], value[1], 1);
+      setenv(value[0], value[1], 1);
       run_getenv(value[0]);
 
     }else if(strcmp(cmd, "unsetenv") == 0){
@@ -143,7 +140,8 @@ void execute_it(){
 
 
 int understand_errors(){
-	printf("understand_errors()\n");
+	//printf("understand_errors()\n");
+	printf("command recieved: \"%s\"\n", cmd);
 	return ERROR;
 }
 
@@ -179,11 +177,10 @@ void changeDirectory(int goHome, char * dir) {
 	}
 
 	if(cd == -1){
-		fprintf(stdout, "directory %s/%s not found\n", get_curr_dir(), word);
-	}else{
-		//execlp("ls", "ls", "-l",(char *) NULL );
-		//printf("chdir(%s) succeeded", word);
+		fprintf(stdout, "directory %s/%s not found\n", get_curr_dir(), value[0]);
 	}
+	//execlp("ls", "ls", "-l",(char *) NULL );
+	
 }
 
 void run_getenv (char * name)

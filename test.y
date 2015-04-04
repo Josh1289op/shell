@@ -1,5 +1,5 @@
 %{
-#define YYDEBUG 1
+#define YYDEBUG 0
 #include "global.h"
 #define YYSTYPE char *
 extern int line_num;

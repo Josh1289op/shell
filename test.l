@@ -11,7 +11,7 @@ int line_num = 1;
 
 ls|cd     { yylval = strdup(yytext); return COMMAND; }
 
-[A-Za-z0-9]+    { yylval = strdup(yytext); return VALUE; }
+[A-Za-z0-9\/\.]+    { yylval = strdup(yytext); return VALUE; }
 
 -[A-Za-z0-9]+   { yylval = strdup(yytext); return OPTION; }
 

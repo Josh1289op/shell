@@ -10,7 +10,7 @@ void main() {
 	while(1){
 		prompt();
 		int CMD = getCommand();
-    printf("\n\n%d\n\n", CMD);
+    	//printf("\n\n%d\n\n", CMD);
 		switch(CMD){
 			case BYE:
 				exit(0);
@@ -23,7 +23,7 @@ void main() {
 }
 
 void init(){
-  yydebug=1;
+   //yydebug=1;
 	get_curr_dir();
 	home = getenv("HOME");
   int isCommand = 0;

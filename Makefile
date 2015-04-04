@@ -15,6 +15,13 @@ push:
 	git commit -a -m "Pushed from Make File"
 	git pull origin master
 	git push origin master
+	
+cpush:
+	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
+	git add .
+	git commit -a -m "$(com)"
+	git pull origin master
+	git push origin master
 
 start: test.l test.y
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c

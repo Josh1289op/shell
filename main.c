@@ -58,7 +58,7 @@ int getCommand(){
 	init_Scanner_Parser();
 	if (yyparse())
 		return understand_errors();
-	else if (strcmp(cmd,"stop") == 0) {
+	else if (strcmp(curCmd.name,"stop") == 0) {
 		return BYE;
 	} else {
 		return OK;
@@ -86,33 +86,33 @@ void processCommand(){
 
 void do_it() {
   if(!isCommandValue){
-    printf("Command = %s\n", cmd);
-    if(strcmp(cmd,"cd") == 0){
+    printf("Command = %s\n", curCmd.name);
+    if(strcmp(curCmd.name,"cd") == 0){
       char * garbage;
       changeDirectory(true, garbage);
-    }else if(strcmp(cmd, "printenv") == 0){
+    }else if(strcmp(curCmd.name, "printenv") == 0){
       char** env;
       for (env = environment; *env != 0; env++)
       {
         char* thisEnv = *env;
         printf("%s\n", thisEnv);
       }
-    }else if(strcmp(cmd, "bye") == 0){
+    }else if(strcmp(curCmd.name, "bye") == 0){
       exit(0);
     }
   }else {
     isCommandValue = false;
-    printf("Command Value = %s %s %s %s\n", cmd, value[0], value[1], value[2]);
-    if(strcmp(cmd,"cd") == 0){
+    printf("Command Value = %s %s %s %s\n", curCmd.name, value[0], value[1], value[2]);
+    if(strcmp(curCmd.name,"cd") == 0){
       changeDirectory(false, value[0]);
-    }else if(strcmp(cmd, "setenv") == 0){
+    }else if(strcmp(curCmd.name, "setenv") == 0){
       //setenv variable value
       setenv(value[0], value[1], 1);
       run_getenv(value[0]);
 
-    }else if(strcmp(cmd, "unsetenv") == 0){
+    }else if(strcmp(curCmd.name, "unsetenv") == 0){
       unsetenv(value[0]);
-    }else if(strcmp(cmd, "getenv") == 0){
+    }else if(strcmp(curCmd.name, "getenv") == 0){
       //get a variable value
       run_getenv(value[0]);
     }
@@ -141,7 +141,7 @@ void execute_it(){
 
 int understand_errors(){
 	//printf("understand_errors()\n");
-	printf("command recieved: \"%s\"\n", cmd);
+	printf("command recieved: \"%s\"\n", curCmd.name);
 	return ERROR;
 }
 

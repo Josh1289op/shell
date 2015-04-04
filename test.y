@@ -24,9 +24,9 @@ int yywrap()
 
 start: command EOL  { return 0; }
 
-command:  { cmd = "empty"; }
-	  |	COMMAND  axis {printf("Command %s\n", $1); isBuiltin = true; cmd = $1;}
-      | COMMAND { printf("Command %s\n", $1); isBuiltin = true; cmd = $1;};
+command:  { curCmd.name = "empty"; }
+	  |	COMMAND  axis {printf("Command %s\n", $1); isBuiltin = true; curCmd.name = $1;}
+      | COMMAND { printf("Command %s\n", $1); isBuiltin = true; curCmd.name = $1;};
 
 axis: inter | axis inter ;
 

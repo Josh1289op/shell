@@ -39,6 +39,7 @@ typedef struct _CMD {
 	int type;
 } cmd;
 
+cmd curCmd;
 int cd;
 char cwd[1024];
 char * value[1000];

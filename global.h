@@ -24,10 +24,11 @@
 #define Stop 4
 
 
-void init();
+void init(char**);
 void prompt();
 
 void run_getenv (char * name);
+int check_for_env(char * var);
 int getCommand();
 void processCommand();
 void do_it();
@@ -37,13 +38,16 @@ int understand_errors();
 void init_Scanner_Parser();
 
 char* get_curr_dir();
-void changeDirectory(int);
+void changeDirectory(int, char *);
 
 int cd;
 char* word;
 char cwd[1024];
 char * cmd;
-char * value;
+char * value[1000];
+int valuecount;
+char ** environment;
+int environmentcount;
 const char* home;
 int builtin;
 int isBuiltin;

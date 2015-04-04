@@ -3,7 +3,7 @@
 #include "global.h"
 #define YYSTYPE char *
 extern int line_num;
-extern int isCommand, isCommandValue;
+extern int isCommand, isCommandValue, valuecount;
 
   void yyerror(const char *str)
 {
@@ -23,12 +23,13 @@ int yywrap()
 
 start: command EOL  { return 0; }
 
-command: COMMAND  axis {printf("Command %s\n", $1);}
-      | COMMAND { printf("Command %s\n", $1); isBuiltin = true; isCommand = 1; cmd = $1;}
-      | COMMAND VALUE { printf("COMMAND VALUE %s %s \n", $1, $2); isBuiltin = true; isCommandValue = 1; cmd = $1; value = $2;};
+command: COMMAND  axis {printf("Command %s\n", $1); isBuiltin = true; cmd = $1;}
+      | COMMAND { printf("Command %s\n", $1); isBuiltin = true; cmd = $1;};
 
 axis: inter | axis inter ;
 
-inter: VALUE  {printf("Inter value %s\n", $1);}
+inter: VALUE  {printf("Inter value %s\n", $1);
+               isBuiltin = true; isCommandValue = 1; value[valuecount++] = $1;
+              }
        | OPTION {printf("Inter option %s\n", $1);}
 %%

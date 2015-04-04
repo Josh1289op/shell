@@ -30,22 +30,21 @@ void execute_it();
 void handle_errors();
 int understand_errors();
 void init_Scanner_Parser();
+void setBuiltins();
 
 char* get_curr_dir();
 void changeDirectory(int, char *);
 
 typedef struct _CMD {
 	char* name;
-	int type;
+	int isBuiltin;
 } cmd;
 
 cmd curCmd;
-int cd;
 char cwd[1024];
 char * value[1000];
 int valuecount;
 char ** environment;
 int environmentcount;
 const char* home;
-int isBuiltin;
 int isCommandValue;

@@ -58,9 +58,10 @@ int getCommand(){
 	init_Scanner_Parser();
 	if (yyparse())
 		return understand_errors();
-	else if (strcmp(curCmd.name,"stop") == 0) {
+	else if (strcmp(curCmd.name,"end") == 0) {
 		return BYE;
 	} else {
+		setBuiltins();
 		return OK;
 	}
 }
@@ -68,13 +69,23 @@ int getCommand(){
 void init_Scanner_Parser(){
 	get_curr_dir();
 	home = getenv("HOME");
-	int cd = 0;
-	char cwd[1024] = "";
-	int isBuiltin = true;
+	curCmd.isBuiltin = false;
+}
+
+void setBuiltins(){
+	if(	  strcmp(curCmd.name,"cd") == 0
+		|| strcmp(curCmd.name,"printenv") == 0
+		|| strcmp(curCmd.name,"getenv") == 0
+		|| strcmp(curCmd.name,"setenv") == 0
+		|| strcmp(curCmd.name,"unsetenv") == 0) 
+	{
+		curCmd.isBuiltin = true;
+		printf("isBuiltin = true\n");
+	}
 }
 
 void processCommand(){
-	if (isBuiltin) {
+	if (curCmd.isBuiltin) {
 		do_it();		// run built-in commands – no fork
 						// no exec; only your code + Unix
 						//system calls.
@@ -85,38 +96,37 @@ void processCommand(){
 }
 
 void do_it() {
-  if(!isCommandValue){
-    printf("Command = %s\n", curCmd.name);
-    if(strcmp(curCmd.name,"cd") == 0){
-      char * garbage;
-      changeDirectory(true, garbage);
-    }else if(strcmp(curCmd.name, "printenv") == 0){
-      char** env;
-      for (env = environment; *env != 0; env++)
-      {
-        char* thisEnv = *env;
-        printf("%s\n", thisEnv);
-      }
-    }else if(strcmp(curCmd.name, "bye") == 0){
-      exit(0);
-    }
-  }else {
-    isCommandValue = false;
-    printf("Command Value = %s %s %s %s\n", curCmd.name, value[0], value[1], value[2]);
-    if(strcmp(curCmd.name,"cd") == 0){
-      changeDirectory(false, value[0]);
-    }else if(strcmp(curCmd.name, "setenv") == 0){
-      //setenv variable value
-      setenv(value[0], value[1], 1);
-      run_getenv(value[0]);
+  	if(!isCommandValue){
+	    printf("Command = %s\n", curCmd.name);
+	    if(strcmp(curCmd.name,"cd") == 0){
+			char * garbage;
+			changeDirectory(true, garbage);
+	    } else if(strcmp(curCmd.name, "printenv") == 0){
+	      	char** env;
+			for (env = environment; *env != 0; env++) {
+			char* thisEnv = *env;
+			printf("%s\n", thisEnv);
+			}
+	    } else if(strcmp(curCmd.name, "exit") == 0){
+	      	exit(0);
+	    }
+  	} else {
+	    isCommandValue = false;
+	    printf("Command Value = %s %s %s %s\n", curCmd.name, value[0], value[1], value[2]);
+	    if(strcmp(curCmd.name,"cd") == 0){
+	      	changeDirectory(false, value[0]);
+	    }else if(strcmp(curCmd.name, "setenv") == 0){
+	      	//setenv variable value
+	      	setenv(value[0], value[1], 1);
+	      	run_getenv(value[0]);
 
-    }else if(strcmp(curCmd.name, "unsetenv") == 0){
-      unsetenv(value[0]);
-    }else if(strcmp(curCmd.name, "getenv") == 0){
-      //get a variable value
-      run_getenv(value[0]);
-    }
-  }
+	    } else if(strcmp(curCmd.name, "unsetenv") == 0){
+	      	unsetenv(value[0]);
+	    }else if(strcmp(curCmd.name, "getenv") == 0){
+	      	//get a variable value
+	      	run_getenv(value[0]);
+	    }
+  	}
 }
 
 void execute_it(){
@@ -170,17 +180,16 @@ char* get_curr_dir() {
 }
 
 void changeDirectory(int goHome, char * dir) {
+	int err = 0;
 	if(goHome){
-		cd = chdir(home);
+		err = chdir(home);
 	} else {
-		cd = chdir(dir);
+		err = chdir(dir);
 	}
 
-	if(cd == -1){
+	if(err == -1){
 		fprintf(stdout, "directory %s/%s not found\n", get_curr_dir(), value[0]);
-	}
-	//execlp("ls", "ls", "-l",(char *) NULL );
-	
+	}	
 }
 
 void run_getenv (char * name)

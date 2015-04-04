@@ -25,13 +25,14 @@ int yywrap()
 start: command EOL  { return 0; }
 
 command:  { curCmd.name = "empty"; }
-	  |	COMMAND  axis {printf("Command %s\n", $1); isBuiltin = true; curCmd.name = $1;}
-      | COMMAND { printf("Command %s\n", $1); isBuiltin = true; curCmd.name = $1;};
+	  |	COMMAND  axis {printf("Command %s\n", $1); curCmd.name = $1;}
+      | COMMAND { printf("Command %s\n", $1); curCmd.name = $1;};
 
 axis: inter | axis inter ;
 
-inter: VALUE  {printf("Inter value %s\n", $1);
-               isBuiltin = true; isCommandValue = true; value[valuecount++] = $1;
+inter: VALUE  { printf("Inter value %s\n", $1);
+                isCommandValue = true; 
+                value[valuecount++] = $1;
               }
-       | OPTION {printf("Inter option %s\n", $1);}
+       | OPTION { printf("Inter option %s\n", $1); }
 %%

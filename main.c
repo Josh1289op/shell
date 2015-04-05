@@ -157,33 +157,10 @@ void execute_it(){
 	int status;
 	switch(pid = fork()) {
 		case 0:
-			if(!isCommandValue){
-			    printf("Command = %s\n", curCmd.name);
-			    if(strcmp(curCmd.name,"ls") == 0){
-					//execlp("ls", "ls",(char *) NULL );
-					curCmd.opt[0] = "ls";
-					execv("/bin/ls", curCmd.opt);
-			    } else if(strcmp(curCmd.name, "x") == 0){
-			      	
-			    } else if(strcmp(curCmd.name, "x") == 0){
-			      	
-			    }
-		  	} else {
-			    isCommandValue = false;
-			    printf("Command Value = %s %s %s %s\n", curCmd.name, value[0], value[1], value[2]);
-			    if(strcmp(curCmd.name,"ls") == 0){
-					//execlp("ls", "ls", "-l",(char *) NULL );
-					curCmd.opt[0] = "ls";
-					execv("/bin/ls", curCmd.opt);
-			    }else if(strcmp(curCmd.name, "x") == 0){
-			      	
-			    } else if(strcmp(curCmd.name, "x") == 0){
-			      	
-			    }else if(strcmp(curCmd.name, "x") == 0){
-			      	
-
-			    }
-		  	} break;
+			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
+			curCmd.opt[0] = curCmd.name;
+			execvp("ls", curCmd.opt);
+			break;
 
 		default:
 			if(curCmd.wait){

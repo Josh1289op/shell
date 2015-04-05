@@ -19,7 +19,7 @@ push:
 cpush:
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
 	git add .
-	git commit -a -m "$(com)"
+	git commit -a -m "$(c)"
 	git pull origin master
 	git push origin master
 

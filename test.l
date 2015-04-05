@@ -13,7 +13,7 @@ end|ls|cd|exit|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); ret
 
 [A-Za-z0-9\/\.]+    { yylval = strdup(yytext); return VALUE; }
 
--[A-Za-z0-9]+   { yylval = strdup(yytext); return OPTION; }
+-[A-Za-z0-9]+|&   { yylval = strdup(yytext); return OPTION; }
 
 [ \t]   /* ignore whitespace */ ;
 

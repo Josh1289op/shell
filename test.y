@@ -36,6 +36,6 @@ inter: VALUE  { printf("Inter value %s\n", $1);
               }
        | OPTION { printf("Inter option %s\n", $1);
        			  isCommandValue = true;
-       			  value[valuecount++] = $1;
+       			  curCmd.opt[++curCmd.numOpts] = $1;
        			}
 %%

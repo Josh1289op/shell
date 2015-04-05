@@ -24,20 +24,21 @@ void main(int argc, char **argv, char** environ) {
 }
 
 void init(char ** envp){
-  //yydebug=1;
-  environment = envp;
-  valuecount = 0;
+  	//yydebug=1;
+  	environment = envp;
+  	valuecount = 0;
 	get_curr_dir();
 	home = getenv("HOME");
-  int isCommandValue = false;
-  environmentcount = 0;
-  char** env;
-  for (env = environment; *env != 0; env++)
-  {
-    char* thisEnv = *env;
-    ++environmentcount;
-  }
-  printf("%d\n", environmentcount);
+	path = getenv("PATH");
+  	int isCommandValue = false;
+  	environmentcount = 0;
+  	char** env;
+  	for (env = environment; *env != 0; env++)
+  	{
+    	char* thisEnv = *env;
+    	++environmentcount;
+  	}
+  	printf("%d\n", environmentcount);
 	// init all variables.
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)
@@ -70,6 +71,8 @@ void init_Scanner_Parser(){
 	get_curr_dir();
 	home = getenv("HOME");
 	curCmd.isBuiltin = false;
+	curCmd.numOpts = 0;
+	curCmd.wait = true;
 }
 
 void setBuiltins(){
@@ -91,8 +94,16 @@ void processCommand(){
 						// no exec; only your code + Unix
 						//system calls.
 	} else {
+		shouldWait();
 		execute_it();	// execute general commands
 						//using fork and exec
+	}
+}
+
+void shouldWait(){
+	if(strcmp(curCmd.opt[curCmd.numOpts],"&") == 0){
+		curCmd.wait = false;
+		curCmd.opt[curCmd.numOpts] = NULL;
 	}
 }
 
@@ -135,31 +146,44 @@ void execute_it(){
 
 	// Handle  command execution, pipelining, i/o redirection, and background processing.
 	// Utilize a command table whose components are plugged in during parsing by yacc.
-	if(!isCommandValue){
-	    printf("Command = %s\n", curCmd.name);
-	    if(strcmp(curCmd.name,"ls") == 0){
-			execlp("ls", "ls",(char *) NULL );
-	    } else if(strcmp(curCmd.name, "x") == 0){
-	      	
-	    } else if(strcmp(curCmd.name, "x") == 0){
-	      	
-	    }
-  	} else {
-	    isCommandValue = false;
-	    printf("Command Value = %s %s %s %s\n", curCmd.name, value[0], value[1], value[2]);
-	    if(strcmp(curCmd.name,"ls") == 0){
-	      	if(strcmp(curCmd.opt,"-l") == 0){
-				execlp("ls", "ls", "-l",(char *) NULL );
-	      	}
-	    }else if(strcmp(curCmd.name, "x") == 0){
-	      	
-	    } else if(strcmp(curCmd.name, "x") == 0){
-	      	
-	    }else if(strcmp(curCmd.name, "x") == 0){
-	      	
-	      	
-	    }
-  	}
+	
+	int status;
+	switch(pid = fork()) {
+		case 0:
+			if(!isCommandValue){
+			    printf("Command = %s\n", curCmd.name);
+			    if(strcmp(curCmd.name,"ls") == 0){
+					//execlp("ls", "ls",(char *) NULL );
+					curCmd.opt[0] = "ls";
+					execvp("ls", curCmd.opt);
+			    } else if(strcmp(curCmd.name, "x") == 0){
+			      	
+			    } else if(strcmp(curCmd.name, "x") == 0){
+			      	
+			    }
+		  	} else {
+			    isCommandValue = false;
+			    printf("Command Value = %s %s %s %s\n", curCmd.name, value[0], value[1], value[2]);
+			    if(strcmp(curCmd.name,"ls") == 0){
+					//execlp("ls", "ls", "-l",(char *) NULL );
+					curCmd.opt[0] = "ls";
+					execvp("ls", curCmd.opt);
+			    }else if(strcmp(curCmd.name, "x") == 0){
+			      	
+			    } else if(strcmp(curCmd.name, "x") == 0){
+			      	
+			    }else if(strcmp(curCmd.name, "x") == 0){
+			      	
+
+			    }
+		  	} break;
+
+		default:
+			if(curCmd.wait){
+    			waitpid(pid, &status, 0);
+    		}
+    		break;
+	}
 }
 
 
@@ -185,7 +209,6 @@ void handle_errors(){
 
 char* get_curr_dir() {
 	if (getcwd(cwd, sizeof(cwd)) == NULL){
-		char *cwd = "";
 		perror("no current working directory");
 	} else {
 		return cwd;

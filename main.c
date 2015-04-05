@@ -51,7 +51,6 @@ void init(char ** envp){
 
 void prompt(){
 	get_curr_dir();
-  valuecount = 0;
 	printf("%sasShell:%s%s%s>%s", KCYN, KGRY, cwd, KCYN, KNRM);
 }
 
@@ -71,7 +70,15 @@ void init_Scanner_Parser(){
 	get_curr_dir();
 	home = getenv("HOME");
 	curCmd.isBuiltin = false;
+	int i = 0;
+	for(i; i != curCmd.numOpts + 1; ++i){
+		curCmd.opt[i] = NULL;
+	}
 	curCmd.numOpts = 0;
+	for(i = 0; i != valuecount; ++i){
+		value[i] = NULL;
+	}
+  	valuecount = 0;
 	curCmd.wait = true;
 }
 
@@ -101,7 +108,7 @@ void processCommand(){
 }
 
 void shouldWait(){
-	if(strcmp(curCmd.opt[curCmd.numOpts],"&") == 0){
+	if(curCmd.numOpts > 0 && strcmp(curCmd.opt[curCmd.numOpts],"&") == 0){
 		curCmd.wait = false;
 		curCmd.opt[curCmd.numOpts] = NULL;
 	}
@@ -155,7 +162,7 @@ void execute_it(){
 			    if(strcmp(curCmd.name,"ls") == 0){
 					//execlp("ls", "ls",(char *) NULL );
 					curCmd.opt[0] = "ls";
-					execvp("ls", curCmd.opt);
+					execv("/bin/ls", curCmd.opt);
 			    } else if(strcmp(curCmd.name, "x") == 0){
 			      	
 			    } else if(strcmp(curCmd.name, "x") == 0){
@@ -167,7 +174,7 @@ void execute_it(){
 			    if(strcmp(curCmd.name,"ls") == 0){
 					//execlp("ls", "ls", "-l",(char *) NULL );
 					curCmd.opt[0] = "ls";
-					execvp("ls", curCmd.opt);
+					execv("/bin/ls", curCmd.opt);
 			    }else if(strcmp(curCmd.name, "x") == 0){
 			      	
 			    } else if(strcmp(curCmd.name, "x") == 0){

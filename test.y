@@ -1,8 +1,10 @@
 %{
+#ifndef YYSTYPE
+#define YYSTYPE char*
+#endif
 #define YYDEBUG 0
 #include "global.h"
-#define YYSTYPE char *
-extern int line_num;
+
 extern int isCommandValue, valuecount;
 
   void yyerror(const char *str)
@@ -14,7 +16,6 @@ int yywrap()
 {
         return 1;
 }
-
 
 %}
 

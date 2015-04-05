@@ -1,7 +1,9 @@
 %{
 #include <stdio.h>
+#ifndef YYSTYPE
+#define YYSTYPE char*
+#endif
 #include "test.tab.h"
-extern YYSTYPE yylval;
 
 
 int line_num = 1;

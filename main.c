@@ -101,7 +101,7 @@ void processCommand(){
 		do_it();		// run built-in commands – no fork
 						// no exec; only your code + Unix
 						//system calls.
-	} else {
+	} else if(strcmp(curCmd.name,"empty")) { //if the input is not empty, then execute the command
 		shouldWait();
 		execute_it();	// execute general commands
 						//using fork and exec

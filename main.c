@@ -72,10 +72,10 @@ void init_Scanner_Parser(){
 	curCmd.isBuiltin = false;
 	curCmd.name = NULL;
 	int i = 0;
-	for(i; i != curCmd.numOpts + 1; ++i){
-		curCmd.opt[i] = NULL;
+	for(i; i != curCmd.numArgs + 1; ++i){
+		curCmd.args[i] = NULL;
 	}
-	curCmd.numOpts = 0;
+	curCmd.numArgs = 0;
 	for(i = 0; i != valuecount; ++i){
 		value[i] = NULL;
 	}
@@ -109,9 +109,9 @@ void processCommand(){
 }
 
 void shouldWait(){
-	if(curCmd.numOpts > 0 && strcmp(curCmd.opt[curCmd.numOpts],"&") == 0){
+	if(curCmd.numArgs > 0 && strcmp(curCmd.args[curCmd.numArgs],"&") == 0){
 		curCmd.wait = false;
-		curCmd.opt[curCmd.numOpts] = NULL;
+		curCmd.args[curCmd.numArgs] = NULL;
 	}
 }
 
@@ -159,8 +159,8 @@ void execute_it(){
 	switch(pid = fork()) {
 		case 0:
 			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
-			curCmd.opt[0] = curCmd.name;
-			execvp(curCmd.name, curCmd.opt);
+			curCmd.args[0] = curCmd.name;
+			execvp(curCmd.name, curCmd.args);
 			break;
 
 		default:

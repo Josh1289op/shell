@@ -37,8 +37,8 @@ void shouldWait();
 
 typedef struct _CMD {
 	char* name;
-	char* opt[100];
-	int numOpts;
+	char* args[100];
+	int numArgs;
 	int isBuiltin;
 	int wait;
 } cmd;

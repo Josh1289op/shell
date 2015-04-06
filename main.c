@@ -17,7 +17,7 @@ void main(int argc, char **argv, char** environ) {
 				printf("CMD case: ERROR\n");
 				handle_errors(); break;
 			case OK:
-				printf("CMD case: OK\n");
+				//printf("CMD case: OK\n");
 				processCommand(); break;
 		}
 	}
@@ -70,6 +70,7 @@ void init_Scanner_Parser(){
 	get_curr_dir();
 	home = getenv("HOME");
 	curCmd.isBuiltin = false;
+	curCmd.name = NULL;
 	int i = 0;
 	for(i; i != curCmd.numOpts + 1; ++i){
 		curCmd.opt[i] = NULL;
@@ -159,7 +160,7 @@ void execute_it(){
 		case 0:
 			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
 			curCmd.opt[0] = curCmd.name;
-			execvp("ls", curCmd.opt);
+			execvp(curCmd.name, curCmd.opt);
 			break;
 
 		default:

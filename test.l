@@ -13,7 +13,15 @@ int line_num = 1;
 
 bye|ls|cd|exit|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); return COMMAND; }
 
-[A-Za-z0-9\/\.]+    { yylval = strdup(yytext); return VALUE; }
+[A-Za-z0-9\/\.]+ { yylval = strdup(yytext); return VALUE; }
+
+\".*\"    { //grab the info between the quotes and return as a value
+			yylval = strdup(yytext); 
+			yylval = calloc(strlen(yytext)-1, sizeof(char));
+			strncpy(yylval, &yytext[1], strlen(yytext-2));
+			yylval[strlen(yytext)-2] = '\0';
+			//printf("between quotes = '%s'\n", yylval);
+			return VALUE; }
 
 -[A-Za-z0-9]+|&   { yylval = strdup(yytext); return OPTION; }
 

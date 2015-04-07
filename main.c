@@ -31,7 +31,7 @@ void main(int argc, char **argv, char** environ) {
 }
 
 void init(char ** envp){
-  	yydebug=1;
+  	//yydebug=1;
   	environment = envp;
 	get_curr_dir();
 	home = getenv("HOME");
@@ -183,11 +183,15 @@ void execute_it(){
 	// Handle  command execution, pipelining, i/o redirection, and background processing.
 	// Utilize a command table whose components are plugged in during parsing by yacc.
 	
-	int status;
+	int status; int err = 0;
 	switch(pid = fork()) {
 		case 0:
 			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
 			execvp(curCmd->name, curCmd->args);
+			if(status){
+				printf("%s: command not recognized.\n", curCmd->name);
+				exit(0);
+			}
 			break;
 
 		default:

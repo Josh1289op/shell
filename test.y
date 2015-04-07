@@ -50,5 +50,5 @@ inter: VALUE  { isCommandValue = true;
        | OPTION { insertCmd.args[++insertCmd.numArgs] = $1;
        			  printf("Inter option %s\n", insertCmd.args[insertCmd.numArgs]);
        			}
-       | COMMAND { printf("jsdhfjh command\n"); };
+       | COMMAND { printf("extra unhandled command: %s\n", $1); };
 %%

@@ -73,7 +73,7 @@ int getCommand(){
 	init_Scanner_Parser();
 	if (yyparse()){
 		return understand_errors();
-	} else if (strcmp(curCmd->name,"end") == 0) {
+	} else if (strcmp(curCmd->name,"bye") == 0) {
 		return BYE;
 	} else {
 		setBuiltins();

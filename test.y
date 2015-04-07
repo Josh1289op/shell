@@ -5,7 +5,7 @@
 #define YYDEBUG 0
 #include "global.h"
 
-extern int isCommandValue, valuecount;
+extern int isCommandValue;
 
   void yyerror(const char *str)
 {
@@ -26,16 +26,16 @@ int yywrap()
 start: command EOL  { return 0; }
 
 command:  { curCmd.name = "empty"; }
-	  |	COMMAND  axis {printf("Command %s\n", $1); curCmd.name = $1;}
-      | COMMAND { printf("Command %s\n", $1); curCmd.name = $1;};
+	  |	COMMAND  axis {printf("Command %s\n", $1); curCmd.name = $1; curCmd.args[0] = curCmd.name;}
+      | COMMAND { printf("Command %s\n", $1); curCmd.name = $1; curCmd.args[0] = curCmd.name;};
 
 axis: inter | axis inter ;
 
-inter: VALUE  { printf("Inter value %s\n", $1);
-                isCommandValue = true; 
-                value[valuecount++] = $1;
+inter: VALUE  { isCommandValue = true;
+                curCmd.args[++curCmd.numArgs] = $1;
+                printf("Inter value %s\n", curCmd.args[curCmd.numArgs]);
               }
-       | OPTION { printf("Inter option %s\n", $1);
-       			  curCmd.args[++curCmd.numArgs] = $1;
+       | OPTION { curCmd.args[++curCmd.numArgs] = $1;
+       			  printf("Inter option %s\n", curCmd.args[curCmd.numArgs]);
        			}
 %%

@@ -26,7 +26,7 @@ void main(int argc, char **argv, char** environ) {
 void init(char ** envp){
   	//yydebug=1;
   	environment = envp;
-  	valuecount = 0;
+  	curCmd.numArgs = 0;
 	get_curr_dir();
 	home = getenv("HOME");
 	path = getenv("PATH");
@@ -76,10 +76,6 @@ void init_Scanner_Parser(){
 		curCmd.args[i] = NULL;
 	}
 	curCmd.numArgs = 0;
-	for(i = 0; i != valuecount; ++i){
-		value[i] = NULL;
-	}
-  	valuecount = 0;
 	curCmd.wait = true;
 }
 
@@ -132,19 +128,19 @@ void do_it() {
 	    }
   	} else {
 	    isCommandValue = false;
-	    printf("Command Value = %s %s %s %s\n", curCmd.name, value[0], value[1], value[2]);
+	    printf("Command Value = %s %s %s %s\n", curCmd.name, curCmd.args[1], curCmd.args[2], curCmd.args[3]);
 	    if(strcmp(curCmd.name,"cd") == 0){
-	      	changeDirectory(false, value[0]);
+	      	changeDirectory(false, curCmd.args[1]);
 	    }else if(strcmp(curCmd.name, "setenv") == 0){
 	      	//setenv variable value
-	      	setenv(value[0], value[1], 1);
-	      	run_getenv(value[0]);
+	      	setenv(curCmd.args[1], curCmd.args[2], 1);
+	      	run_getenv(curCmd.args[1]);
 
 	    } else if(strcmp(curCmd.name, "unsetenv") == 0){
-	      	unsetenv(value[0]);
+	      	unsetenv(curCmd.args[1]);
 	    }else if(strcmp(curCmd.name, "getenv") == 0){
 	      	//get a variable value
-	      	run_getenv(value[0]);
+	      	run_getenv(curCmd.args[1]);
 	    }
   	}
 }
@@ -210,7 +206,7 @@ void changeDirectory(int goHome, char * dir) {
 	}
 
 	if(err == -1){
-		fprintf(stdout, "directory %s/%s not found\n", get_curr_dir(), value[0]);
+		fprintf(stdout, "directory %s/%s not found\n", get_curr_dir(), curCmd.args[1]);
 	}	
 }
 

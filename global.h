@@ -37,7 +37,7 @@ void shouldWait();
 
 typedef struct _CMD {
 	char* name;
-	char* args[100];
+	char* args[1000];
 	int numArgs;
 	int isBuiltin;
 	int wait;
@@ -45,8 +45,6 @@ typedef struct _CMD {
 
 cmd curCmd;
 char cwd[1024];
-char * value[1000];
-int valuecount;
 char ** environment;
 int environmentcount;
 const char* path;

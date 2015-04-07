@@ -26,7 +26,6 @@ int yywrap()
 start: command EOL  { return 0; };
 
 command:  { insertCmd.name = "empty"; }
-    | COMMAND COMMAND { printf("command commands"); }
 	  |	COMMAND  axis { printf("Command - %s\n", $1); 
 	  					insertCmd.name = $1; 
 	  					insertCmd.args[0] = insertCmd.name;
@@ -50,5 +49,6 @@ inter: VALUE  { isCommandValue = true;
               }
        | OPTION { insertCmd.args[++insertCmd.numArgs] = $1;
        			  printf("Inter option %s\n", insertCmd.args[insertCmd.numArgs]);
-       			};
+       			}
+       | COMMAND { printf("jsdhfjh command"); };
 %%

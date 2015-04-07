@@ -26,7 +26,7 @@ int yywrap()
 start: command EOL  { return 0; };
 
 command:  { insertCmd.name = "empty"; }
-    | COMMAND command { printf("command commands"); }
+    | COMMAND COMMAND { printf("command commands"); }
 	  |	COMMAND  axis { printf("Command - %s\n", $1); 
 	  					insertCmd.name = $1; 
 	  					insertCmd.args[0] = insertCmd.name;

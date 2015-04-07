@@ -24,18 +24,29 @@ int yywrap()
 %%
 
 start: command EOL  { return 0; }
+	   | VALUE command EOL { insertCmd.name = $1; return 1; }
+	   | OPTION command EOL { insertCmd.name = $1; return 1; };
 
-command:  { curCmd.name = "empty"; }
-	  |	COMMAND  axis {printf("Command %s\n", $1); curCmd.name = $1; curCmd.args[0] = curCmd.name;}
-      | COMMAND { printf("Command %s\n", $1); curCmd.name = $1; curCmd.args[0] = curCmd.name;};
+command:  { insertCmd.name = "empty"; }
+	  |	COMMAND  axis { printf("Command %s\n", $1); 
+	  					insertCmd.name = $1; 
+	  					insertCmd.args[0] = insertCmd.name;
+	  					cmdTab[numTabCmds++] = insertCmd;
+	  				  }
+      | COMMAND { printf("Command %s\n", $1); 
+      			  insertCmd.name = $1; 
+      			  insertCmd.args[0] = insertCmd.name;
+      			  cmdTab[numTabCmds++] = insertCmd;
+      			  }
+      | VALUE axis | OPTION axis | VALUE | OPTION;
 
 axis: inter | axis inter ;
 
 inter: VALUE  { isCommandValue = true;
-                curCmd.args[++curCmd.numArgs] = $1;
-                printf("Inter value %s\n", curCmd.args[curCmd.numArgs]);
+                insertCmd.args[++insertCmd.numArgs] = $1;
+                printf("Inter value %s\n", insertCmd.args[insertCmd.numArgs]);
               }
-       | OPTION { curCmd.args[++curCmd.numArgs] = $1;
-       			  printf("Inter option %s\n", curCmd.args[curCmd.numArgs]);
-       			}
+       | OPTION { insertCmd.args[++insertCmd.numArgs] = $1;
+       			  printf("Inter option %s\n", insertCmd.args[insertCmd.numArgs]);
+       			};
 %%

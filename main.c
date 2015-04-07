@@ -17,16 +17,22 @@ void main(int argc, char **argv, char** environ) {
 				printf("CMD case: ERROR\n");
 				handle_errors(); break;
 			case OK:
-				//printf("CMD case: OK\n");
-				processCommand(); break;
+				printf("CMD case: OK\n");
+
+				while(++cmdTabPos <= numTabCmds){
+					processCommand();
+					reInitCurCmd();
+					curCmd = &cmdTab[cmdTabPos];
+				}
+				break;
 		}
+		reInitCurCmd();
 	}
 }
 
 void init(char ** envp){
   	//yydebug=1;
   	environment = envp;
-  	curCmd.numArgs = 0;
 	get_curr_dir();
 	home = getenv("HOME");
 	path = getenv("PATH");
@@ -39,6 +45,14 @@ void init(char ** envp){
     	++environmentcount;
   	}
   	printf("%d\n", environmentcount);
+
+	numTabCmds = 0;
+	cmdTabPos = 0;
+  	insertCmd.name = "empty"; 
+	insertCmd.args[0] = insertCmd.name;
+	cmdTab[numTabCmds] = insertCmd;
+  	insertCmd.numArgs = 0;
+  	cmdTab[0] = insertCmd;
 	// init all variables.
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)
@@ -56,9 +70,9 @@ void prompt(){
 
 int getCommand(){
 	init_Scanner_Parser();
-	if (yyparse())
+	if (yyparse()){
 		return understand_errors();
-	else if (strcmp(curCmd.name,"end") == 0) {
+	} else if (strcmp(curCmd->name,"end") == 0) {
 		return BYE;
 	} else {
 		setBuiltins();
@@ -69,35 +83,53 @@ int getCommand(){
 void init_Scanner_Parser(){
 	get_curr_dir();
 	home = getenv("HOME");
-	curCmd.isBuiltin = false;
-	curCmd.name = NULL;
+	numTabCmds = 0;
+	cmdTabPos = 0;
+	//grab the next command from the table
+	curCmd = &cmdTab[0];
+}
+
+//call this everytime you finish with the command you are currently working on
+//this is needed for alias, pipes, and io redirect that have more than one command in a line
+void reInitCurCmd() {
+	//clear out the values of the cmd you just finished with
+	curCmd->name = NULL;
 	int i = 0;
-	for(i; i != curCmd.numArgs + 1; ++i){
-		curCmd.args[i] = NULL;
+	for(i; i != curCmd->numArgs + 1; ++i){
+		curCmd->args[i] = NULL;
 	}
-	curCmd.numArgs = 0;
-	curCmd.wait = true;
+	curCmd->numArgs = 0;
+	curCmd->isBuiltin = false;
+	curCmd->wait = true;
+	
+	insertCmd.name = NULL;
+	for(i = 0; i != insertCmd.numArgs + 1; ++i){
+		insertCmd.args[i] = NULL;
+	}
+	insertCmd.numArgs = 0;
+	insertCmd.isBuiltin = false;
+	insertCmd.wait = true;
 }
 
 void setBuiltins(){
-	if(	  strcmp(curCmd.name,"cd") == 0
-		|| strcmp(curCmd.name,"printenv") == 0
-		|| strcmp(curCmd.name,"getenv") == 0
-		|| strcmp(curCmd.name,"setenv") == 0
-		|| strcmp(curCmd.name,"unsetenv") == 0
-		|| strcmp(curCmd.name,"exit") == 0) 
+	if(	  strcmp(curCmd->name,"cd") == 0
+		|| strcmp(curCmd->name,"printenv") == 0
+		|| strcmp(curCmd->name,"getenv") == 0
+		|| strcmp(curCmd->name,"setenv") == 0
+		|| strcmp(curCmd->name,"unsetenv") == 0
+		|| strcmp(curCmd->name,"exit") == 0) 
 	{
-		curCmd.isBuiltin = true;
+		curCmd->isBuiltin = true;
 		printf("isBuiltin = true\n");
 	}
 }
 
 void processCommand(){
-	if (curCmd.isBuiltin) {
+	if (curCmd->isBuiltin) {
 		do_it();		// run built-in commands – no fork
 						// no exec; only your code + Unix
 						//system calls.
-	} else if(strcmp(curCmd.name,"empty")) { //if the input is not empty, then execute the command
+	} else if(strcmp(curCmd->name,"empty")) { //if the input is not empty, then execute the command
 		shouldWait();
 		execute_it();	// execute general commands
 						//using fork and exec
@@ -105,42 +137,41 @@ void processCommand(){
 }
 
 void shouldWait(){
-	if(curCmd.numArgs > 0 && strcmp(curCmd.args[curCmd.numArgs],"&") == 0){
-		curCmd.wait = false;
-		curCmd.args[curCmd.numArgs] = NULL;
+	if(curCmd->numArgs > 0 && strcmp(curCmd->args[curCmd->numArgs],"&") == 0){
+		curCmd->wait = false;
+		curCmd->args[curCmd->numArgs] = NULL;
 	}
 }
 
 void do_it() {
   	if(!isCommandValue){
-	    printf("Command = %s\n", curCmd.name);
-	    if(strcmp(curCmd.name,"cd") == 0){
+	    printf("Command = %s\n", curCmd->name);
+	    if(strcmp(curCmd->name,"cd") == 0){
 			char * garbage;
 			changeDirectory(true, garbage);
-	    } else if(strcmp(curCmd.name, "printenv") == 0){
+	    } else if(strcmp(curCmd->name, "printenv") == 0){
 	      	char** env;
 			for (env = environment; *env != 0; env++) {
 			char* thisEnv = *env;
 			printf("%s\n", thisEnv);
 			}
-	    } else if(strcmp(curCmd.name, "exit") == 0){
+	    } else if(strcmp(curCmd->name, "exit") == 0){
 	      	exit(0);
 	    }
   	} else {
 	    isCommandValue = false;
-	    printf("Command Value = %s %s %s %s\n", curCmd.name, curCmd.args[1], curCmd.args[2], curCmd.args[3]);
-	    if(strcmp(curCmd.name,"cd") == 0){
-	      	changeDirectory(false, curCmd.args[1]);
-	    }else if(strcmp(curCmd.name, "setenv") == 0){
+	    printf("Command Value = %s %s %s %s\n", curCmd->name, curCmd->args[1], curCmd->args[2], curCmd->args[3]);
+	    if(strcmp(curCmd->name,"cd") == 0){
+	      	changeDirectory(false, curCmd->args[1]);
+	    }else if(strcmp(curCmd->name, "setenv") == 0){
 	      	//setenv variable value
-	      	setenv(curCmd.args[1], curCmd.args[2], 1);
-	      	run_getenv(curCmd.args[1]);
-
-	    } else if(strcmp(curCmd.name, "unsetenv") == 0){
-	      	unsetenv(curCmd.args[1]);
-	    }else if(strcmp(curCmd.name, "getenv") == 0){
+	      	setenv(curCmd->args[1], curCmd->args[2], 1);
+	      	run_getenv(curCmd->args[1]);
+	    } else if(strcmp(curCmd->name, "unsetenv") == 0){
+	      	unsetenv(curCmd->args[1]);
+	    }else if(strcmp(curCmd->name, "getenv") == 0){
 	      	//get a variable value
-	      	run_getenv(curCmd.args[1]);
+	      	run_getenv(curCmd->args[1]);
 	    }
   	}
 }
@@ -155,11 +186,11 @@ void execute_it(){
 	switch(pid = fork()) {
 		case 0:
 			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
-			execvp(curCmd.name, curCmd.args);
+			execvp(curCmd->name, curCmd->args);
 			break;
 
 		default:
-			if(curCmd.wait){
+			if(curCmd->wait){
     			waitpid(pid, &status, 0);
     		}
     		break;
@@ -169,12 +200,13 @@ void execute_it(){
 
 int understand_errors(){
 	//printf("understand_errors()\n");
-	printf("command recieved: \"%s\"\n", curCmd.name);
+	printf("command recieved: \"%s\"\n", insertCmd.name);
 	return ERROR;
 }
 
 void handle_errors(){
 	printf("handle_errors()\n");
+
 	// Find out if error occurs in middle of command
 	// That is, the command still has a “tail”
 	// In this case you have to recover by “eating”
@@ -205,7 +237,7 @@ void changeDirectory(int goHome, char * dir) {
 	}
 
 	if(err == -1){
-		fprintf(stdout, "directory %s/%s not found\n", get_curr_dir(), curCmd.args[1]);
+		fprintf(stdout, "directory %s/%s not found\n", get_curr_dir(), curCmd->args[1]);
 	}	
 }
 

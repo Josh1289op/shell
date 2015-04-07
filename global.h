@@ -34,6 +34,7 @@ void setBuiltins();
 char* get_curr_dir();
 void changeDirectory(int, char *);
 void shouldWait();
+void reInitCurCmd();
 
 typedef struct _CMD {
 	char* name;
@@ -43,9 +44,12 @@ typedef struct _CMD {
 	int wait;
 } cmd;
 
-/*cmd cmdTab[100];
-cmd insertCmd;*/
-cmd curCmd;
+cmd cmdTab[100];
+cmd insertCmd;
+cmd* curCmd;
+int numTabCmds;
+int cmdTabPos;
+
 char cwd[1024];
 char ** environment;
 int environmentcount;

@@ -52,6 +52,7 @@ void init(char ** envp){
 	insertCmd.args[0] = insertCmd.name;
 	cmdTab[numTabCmds] = insertCmd;
   	insertCmd.numArgs = 0;
+	insertCmd.wait = true;
   	cmdTab[0] = insertCmd;
 	// init all variables.
 	// define (allocate storage) for some var/tables

@@ -23,9 +23,7 @@ int yywrap()
 
 %%
 
-start: command EOL  { return 0; }
-	   | VALUE command EOL { insertCmd.name = $1; return 1; }
-	   | OPTION command EOL { insertCmd.name = $1; return 1; };
+start: command EOL  { return 0; };
 
 command:  { insertCmd.name = "empty"; }
 	  |	COMMAND  axis { printf("Command %s\n", $1); 
@@ -38,7 +36,10 @@ command:  { insertCmd.name = "empty"; }
       			  insertCmd.args[0] = insertCmd.name;
       			  cmdTab[numTabCmds++] = insertCmd;
       			  }
-      | VALUE axis | OPTION axis | VALUE | OPTION;
+      | VALUE axis  { insertCmd.name = $1; return 1; }
+      | VALUE       { insertCmd.name = $1; return 1; }
+      | OPTION axis { insertCmd.name = $1; return 1; }
+      | OPTION      { insertCmd.name = $1; return 1; };
 
 axis: inter | axis inter ;
 

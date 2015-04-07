@@ -43,6 +43,8 @@ typedef struct _CMD {
 	int wait;
 } cmd;
 
+/*cmd cmdTab[100];
+cmd insertCmd;*/
 cmd curCmd;
 char cwd[1024];
 char ** environment;

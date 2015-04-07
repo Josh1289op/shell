@@ -155,7 +155,6 @@ void execute_it(){
 	switch(pid = fork()) {
 		case 0:
 			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
-			curCmd.args[0] = curCmd.name;
 			execvp(curCmd.name, curCmd.args);
 			break;
 

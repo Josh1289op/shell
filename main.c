@@ -31,7 +31,7 @@ void main(int argc, char **argv, char** environ) {
 }
 
 void init(char ** envp){
-  	//yydebug=1;
+  	yydebug=1;
   	environment = envp;
 	get_curr_dir();
 	home = getenv("HOME");

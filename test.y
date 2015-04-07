@@ -2,7 +2,7 @@
 #ifndef YYSTYPE
 #define YYSTYPE char*
 #endif
-#define YYDEBUG 0
+#define YYDEBUG 1
 #include "global.h"
 
 extern int isCommandValue;

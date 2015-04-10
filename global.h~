@@ -39,11 +39,9 @@ void changeDirectory(int, char *);
 void shouldWait();
 void reInitCurCmd();
 
-
-//Initialization 
 typedef struct _CMD {
 	char* name;
-	char* args[MAXCMD];
+	char* args[1000];
 	int numArgs;
 	int isBuiltin;
 	int wait;
@@ -58,11 +56,11 @@ int cmdTabPos;
 
 
 typedef struct _ALS {
-	char * alsName[MAXALIAS];			//Alias Variable String
-	char * alsValue[MAXALIAS];			//Alias Value String
+	char * alsName[MAXALIAS];
+	char * alsValue[MAXALIAS];
 
 } als;
-//Initialization for Alias Table
+
 als alsTab[MAXALIAS];
 als* curAls;
 int numTablAls;

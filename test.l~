@@ -8,7 +8,7 @@
 
 int line_num = 1;
 %}
-/* ADDED THESE FOR I/O REDIRECTION*/
+/* ADDED THESE FOR I/O REDIRECTION*/;
 %%
 
 "|" 	return PIPE;

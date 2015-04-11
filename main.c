@@ -157,7 +157,7 @@ void shouldWait(){
 }
 
 
-void do_it() {
+int do_it() {
 	printf("do_it curCmd->name: %s\n", curCmd->name);
 
   	if(!isCommandValue){

@@ -9,25 +9,38 @@ void main(int argc, char **argv, char** environ) {
 	while(1){
 		prompt();
 		int CMD = getCommand();
-
+		aliasChecker();
 		switch(CMD){
 			case BYE:
-			printf("CMD case: BYE\n");
+				//printf("CMD case: BYE\n");
 				exit(0);
 			case ERROR:
-				printf("CMD case: ERROR\n");
+				//printf("CMD case: ERROR\n");
 				handle_errors(); break;
 			case OK:
-				printf("CMD case: OK\n");
+				//printf("CMD case: OK\n");
 
 				while(cmdTabPos++ < numTabCmds){
+					printf("Command: %s; %s, %s\n", curCmd->name, curCmd->args[1], curCmd->args[2]);
 					processCommand();
-					reInitCurCmd();
+					reInitCurCmd(false);
 					curCmd = &cmdTab[cmdTabPos];
 				}
 				break;
 		}
-		reInitCurCmd();
+		reInitCurCmd(false);
+	}
+}
+
+void aliasChecker(){
+	int pos = 0; int argPos = 0;
+	for(pos; pos < numTabCmds; ++pos){
+		printf("%d: ", pos);
+		for(argPos; argPos <= cmdTab[pos].numArgs + 1; ++argPos){
+			printf("%s ",  cmdTab[pos].args[argPos]);
+		}
+		printf("\n");
+		argPos = 0;
 	}
 }
 
@@ -37,7 +50,6 @@ void init(char ** envp){
 	get_curr_dir();
 	home = getenv("HOME");
 	path = getenv("PATH");
-  	int isCommandValue = false;
   	environmentcount = 0;
   	char** env;
   	for (env = environment; *env != 0; env++)
@@ -96,19 +108,22 @@ void init_Scanner_Parser(){
 
 //call this everytime you finish with the command you are currently working on
 //this is needed for alias, pipes, and io redirect that have more than one command in a line
-void reInitCurCmd() {
+void reInitCurCmd(int fromYacc) {
 	//clear out the values of the cmd you just finished with
-	curCmd->name = NULL;
-	int i = 0;
-	for(i; i != curCmd->numArgs + 1; ++i){
-		curCmd->args[i] = NULL;
+	if(!fromYacc){
+		curCmd->name = NULL;
+		int i = 0;
+		for(i; i != curCmd->numArgs + 1; ++i){
+			curCmd->args[i] = NULL;
+		}
+		curCmd->numArgs = 0;
+		curCmd->isBuiltin = false;
+		curCmd->wait = true;
 	}
-	curCmd->numArgs = 0;
-	curCmd->isBuiltin = false;
-	curCmd->wait = true;
 	
 	insertCmd.name = NULL;
-	for(i = 0; i != insertCmd.numArgs + 1; ++i){
+	int i = 0;
+	for(i; i != insertCmd.numArgs + 1; ++i){
 		insertCmd.args[i] = NULL;
 	}
 	insertCmd.numArgs = 0;
@@ -132,7 +147,7 @@ void setBuiltins(){
 			|| strcmp(temp->name,"exit") == 0) 
 		{
 			temp->isBuiltin = true;
-			printf("isBuiltin = true\n");
+			//printf("isBuiltin = true\n");
 		}
 	}
 }
@@ -158,10 +173,10 @@ void shouldWait(){
 
 
 int do_it() {
-	printf("do_it curCmd->name: %s\n", curCmd->name);
+	//printf("do_it curCmd->name: %s\n", curCmd->name);
 
-  	if(!isCommandValue){
-	    printf("Command = %s\n", curCmd->name);
+  	if(!curCmd->isCommandValue){
+	    //printf("Command = %s\n", curCmd->name);
 	    if(strcmp(curCmd->name,"cd") == 0){
 			char * garbage;
 			changeDirectory(true, garbage);
@@ -186,8 +201,8 @@ int do_it() {
 	      	exit(0);
 	    }
   	} else {
-	    isCommandValue = false;
-	    printf("Command Value = %s %s %s %s\n", curCmd->name, curCmd->args[1], curCmd->args[2], curCmd->args[3]);
+	    curCmd->isCommandValue = false;
+	    //printf("Command Value = %s %s %s %s\n", curCmd->name, curCmd->args[1], curCmd->args[2], curCmd->args[3]);
 	    if(strcmp(curCmd->name,"cd") == 0){
 	      	changeDirectory(false, curCmd->args[1]);
 	    }else if(strcmp(curCmd->name, "setenv") == 0){
@@ -298,5 +313,5 @@ void run_getenv (char * name)
 }
 
 void do_pipe(char * name){
-	printf("do_pipe: %s\n", name);
+	//printf("do_pipe: %s\n", name);
 }

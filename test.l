@@ -16,7 +16,7 @@ int line_num = 1;
 "<" 	return RIGHT_OPEN;
 "2>" 	return ERROR_CMD;
 
-bye|ls|cd|exit|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); return COMMAND; }
+bye|cd|exit|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); return COMMAND; }
 
 [A-Za-z0-9\/\.]+ { yylval = strdup(yytext); return VALUE; }
 

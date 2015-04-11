@@ -55,6 +55,9 @@ void init(char ** envp){
   	insertCmd.numArgs = 0;
 	insertCmd.wait = true;
   	cmdTab[0] = insertCmd;
+	
+	numTabAls = 0;
+	curAls = &alsTab[0];
 	// init all variables.
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)
@@ -119,6 +122,8 @@ void setBuiltins(){
 		cmd *temp = &cmdTab[counter++];
 
 		if(	  strcmp(temp->name,"cd") == 0
+			|| strcmp(curCmd->name,"alias") == 0
+			|| strcmp(curCmd->name,"unalias") == 0
 			|| strcmp(temp->name,"printenv") == 0
 			|| strcmp(temp->name,"getenv") == 0
 			|| strcmp(temp->name,"setenv") == 0
@@ -151,8 +156,10 @@ void shouldWait(){
 	}
 }
 
+
 void do_it() {
 	printf("do_it curCmd->name: %s\n", curCmd->name);
+
   	if(!isCommandValue){
 	    printf("Command = %s\n", curCmd->name);
 	    if(strcmp(curCmd->name,"cd") == 0){
@@ -164,6 +171,17 @@ void do_it() {
 			char* thisEnv = *env;
 			printf("%s\n", thisEnv);
 			}
+	    } else if(strcmp(curCmd->name, "alias") == 0){
+	    	int i;
+		als * alsPointer = &alsTab[0];
+		if(numTabAls == 0){
+			printf("NO ALIASES FOUND!\n");
+			return OK;		
+		}
+		for(i = 0; i < numTabAls; ++i){
+			printf("%s = %s\n", alsPointer->alsName, alsPointer->alsValue);
+			++alsPointer;		
+		} 
 	    } else if(strcmp(curCmd->name, "exit") == 0){
 	      	exit(0);
 	    }
@@ -184,7 +202,16 @@ void do_it() {
 	    } else if(strcmp(curCmd->name, "|") == 0){
 	      	//pipes
 	      	do_pipe(curCmd->args[0]);
-	    }
+	    } else if(strcmp(curCmd->name, "alias") == 0){
+			if(curCmd->args[1] == NULL || curCmd->args[2] == curCmd->args[2]){
+				return ERROR;
+			}
+			printf("Setting Alias: %s = %s\n", curCmd->args[1], curCmd->args[2]);
+			++numTabAls;
+			curAls->alsName = curCmd->args[1];			
+			curAls->alsValue = curCmd->args[2];
+			++curAls;	
+		}
   	}
 }
 

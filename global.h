@@ -28,7 +28,7 @@ void run_getenv (char * name);
 int check_for_env(char * var);
 int getCommand();
 void processCommand();
-void do_it();
+int do_it();
 void execute_it();
 void handle_errors();
 int understand_errors();
@@ -59,15 +59,18 @@ int cmdTabPos;
 
 
 typedef struct _ALS {
-	char * alsName[MAXALIAS];			//Alias Variable String
-	char * alsValue[MAXALIAS];			//Alias Value String
+	char * alsName;			//Alias Variable String
+	char * alsValue;			//Alias Value String
+	int used;			//This will be used to prevent alias circularization 
 
 } als;
+
 //Initialization for Alias Table
 als alsTab[MAXALIAS];
 als* curAls;
-int numTablAls;
-int cmdTabPos;
+int numTabAls;
+
+
 
 char cwd[1024];
 char ** environment;

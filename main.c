@@ -9,6 +9,7 @@ void main(int argc, char **argv, char** environ) {
 	while(1){
 		prompt();
 		int CMD = getCommand();
+
 		switch(CMD){
 			case BYE:
 			printf("CMD case: BYE\n");
@@ -19,7 +20,7 @@ void main(int argc, char **argv, char** environ) {
 			case OK:
 				printf("CMD case: OK\n");
 
-				while(++cmdTabPos <= numTabCmds){
+				while(cmdTabPos++ < numTabCmds){
 					processCommand();
 					reInitCurCmd();
 					curCmd = &cmdTab[cmdTabPos];
@@ -113,15 +114,21 @@ void reInitCurCmd() {
 }
 
 void setBuiltins(){
-	if(	  strcmp(curCmd->name,"cd") == 0
-		|| strcmp(curCmd->name,"printenv") == 0
-		|| strcmp(curCmd->name,"getenv") == 0
-		|| strcmp(curCmd->name,"setenv") == 0
-		|| strcmp(curCmd->name,"unsetenv") == 0
-		|| strcmp(curCmd->name,"exit") == 0) 
-	{
-		curCmd->isBuiltin = true;
-		printf("isBuiltin = true\n");
+	int counter = 0;
+	while(counter < numTabCmds){
+		cmd *temp = &cmdTab[counter++];
+
+		if(	  strcmp(temp->name,"cd") == 0
+			|| strcmp(temp->name,"printenv") == 0
+			|| strcmp(temp->name,"getenv") == 0
+			|| strcmp(temp->name,"setenv") == 0
+			|| strcmp(temp->name,"unsetenv") == 0
+			|| strcmp(temp->name,"|") == 0
+			|| strcmp(temp->name,"exit") == 0) 
+		{
+			temp->isBuiltin = true;
+			printf("isBuiltin = true\n");
+		}
 	}
 }
 
@@ -145,6 +152,7 @@ void shouldWait(){
 }
 
 void do_it() {
+	printf("do_it curCmd->name: %s\n", curCmd->name);
   	if(!isCommandValue){
 	    printf("Command = %s\n", curCmd->name);
 	    if(strcmp(curCmd->name,"cd") == 0){
@@ -173,6 +181,9 @@ void do_it() {
 	    }else if(strcmp(curCmd->name, "getenv") == 0){
 	      	//get a variable value
 	      	run_getenv(curCmd->args[1]);
+	    } else if(strcmp(curCmd->name, "|") == 0){
+	      	//pipes
+	      	do_pipe(curCmd->args[0]);
 	    }
   	}
 }
@@ -182,7 +193,7 @@ void execute_it(){
 
 	// Handle  command execution, pipelining, i/o redirection, and background processing.
 	// Utilize a command table whose components are plugged in during parsing by yacc.
-	
+
 	int status; int err = 0;
 	switch(pid = fork()) {
 		case 0:
@@ -257,4 +268,8 @@ void run_getenv (char * name)
     else {
         printf ("%s = %s\n", name, value);
     }
+}
+
+void do_pipe(char * name){
+	printf("do_pipe: %s\n", name);
 }

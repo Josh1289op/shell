@@ -25,7 +25,7 @@ int yywrap()
 
 start: command EOL  { return 0; };
 
-command:  { insertCmd.name = "empty"; cmdTab[numTabCmds++] = insertCmd;}
+command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab[numTabCmds++] = insertCmd;}
 	  |	COMMAND  axis { printf("Command axis %s\n", $1); 
 	  					insertCmd.name = $1; 
 	  					insertCmd.args[0] = insertCmd.name;
@@ -42,6 +42,10 @@ command:  { insertCmd.name = "empty"; cmdTab[numTabCmds++] = insertCmd;}
       | VALUE       { insertCmd.name = $1; 
       					insertCmd.args[0] = insertCmd.name;
 	  					cmdTab[numTabCmds++] = insertCmd; }
+      | command PIPE { printf("PIPE |\n"); 
+              insertCmd.name = "|"; 
+              insertCmd.args[0] = insertCmd.name;
+              cmdTab[numTabCmds++] = insertCmd; }
       | OPTION axis { insertCmd.name = $1; return 1; }
       | OPTION      { insertCmd.name = $1; return 1; };
 
@@ -53,6 +57,19 @@ inter: VALUE  { isCommandValue = true;
               }
        | OPTION { insertCmd.args[++insertCmd.numArgs] = $1;
        			  printf("Inter option %s\n", insertCmd.args[insertCmd.numArgs]);
-       			}
-       | COMMAND { printf("extra unhandled command: %s\n", $1); };
+       			};
 %%
+
+/*
+COMMAND OPTION VALUE PIPE COMMAND VALUE PIPE COMMAND
+
+COMMAND axis
+        axis inter
+             OPTION
+        axis inter
+             VALUE
+        axis inter
+             PIPE
+        axis
+        COMMAND
+*/

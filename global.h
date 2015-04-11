@@ -38,6 +38,7 @@ char* get_curr_dir();
 void changeDirectory(int, char *);
 void shouldWait();
 void reInitCurCmd();
+void do_pipe(char *);
 
 
 //Initialization 

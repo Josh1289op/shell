@@ -21,7 +21,7 @@ void main(int argc, char **argv, char** environ) {
 				//printf("CMD case: OK\n");
 
 				while(cmdTabPos++ < numTabCmds){
-					printf("Command: %s; %s, %s\n", curCmd->name, curCmd->args[1], curCmd->args[2]);
+					//printf("curCmd: %s %s, %s\n", curCmd->name, curCmd->args[1], curCmd->args[2]);
 					processCommand();
 					reInitCurCmd(false);
 					curCmd = &cmdTab[cmdTabPos];

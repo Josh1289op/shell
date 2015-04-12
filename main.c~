@@ -112,9 +112,8 @@ void init_Scanner_Parser(){
 	home = getenv("HOME");
 	numTabCmds = 0;
 	cmdTabPos = 0;
-	//grab the first command from the table
+	//grab the next command from the table
 	curCmd = &cmdTab[0];
-	int aliasPos = 0;
 	for(aliasPos; aliasPos < numTabAls; ++aliasPos){
 		alsTab[aliasPos].used = false;
 	}
@@ -169,9 +168,7 @@ void setBuiltins(){
 }
 
 void processCommand(){
-	if(do_pipe()){
-
-	} else if (curCmd->isBuiltin) {
+	if (curCmd->isBuiltin) {
 		do_it();		// run built-in commands – no fork
 						// no exec; only your code + Unix
 						//system calls.
@@ -234,7 +231,7 @@ int do_it() {
 	      	run_getenv(curCmd->args[1]);
 	    } else if(strcmp(curCmd->name, "|") == 0){
 	      	//pipes
-	      	//printf("do_pipe: %s\n", curCmd->name);
+	      	do_pipe(curCmd->args[0]);
 	    } else if(strcmp(curCmd->name, "alias") == 0){
 			//printf("IN SIDE OF ALIAS WITH COMMAND VALUE");
 			if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
@@ -332,6 +329,6 @@ void run_getenv (char * name)
     }
 }
 
-void do_pipe(){
-	
+void do_pipe(char * name){
+	//printf("do_pipe: %s\n", name);
 }

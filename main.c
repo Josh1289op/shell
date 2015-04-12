@@ -124,7 +124,8 @@ void init_Scanner_Parser(){
 	home = getenv("HOME");
 	numTabCmds = 0;
 	cmdTabPos = 0;
-	//grab the next command from the table
+	numPipes = 0;
+	//grab the first command from the table
 	curCmd = &cmdTab[0];
 	int aliasPos = 0;
 	for(aliasPos; aliasPos < numTabAls; ++aliasPos){
@@ -187,8 +188,11 @@ void processCommand(){
 						//system calls.
 	} else if(strcmp(curCmd->name,"empty")) { //if the input is not empty, then execute the command
 		shouldWait();
-		execute_it();	// execute general commands
-						//using fork and exec
+		if(numPipes > 0){
+			do_pipe();
+		} else {
+			execute_it();	// execute general commands using fork and exec
+		}
 	}
 }
 
@@ -244,7 +248,7 @@ int do_it() {
 	      	run_getenv(curCmd->args[1]);
 	    } else if(strcmp(curCmd->name, "|") == 0){
 	      	//pipes
-	      	do_pipe(curCmd->args[0]);
+	      	//printf("do_pipe: %s\n", curCmd->name);
 	    } else if(strcmp(curCmd->name, "alias") == 0){
 			//printf("IN SIDE OF ALIAS WITH COMMAND VALUE");
 			if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
@@ -342,6 +346,6 @@ void run_getenv (char * name)
     }
 }
 
-void do_pipe(char * name){
-	//printf("do_pipe: %s\n", name);
+void do_pipe(){
+	
 }

@@ -38,8 +38,13 @@ char* get_curr_dir();
 void changeDirectory(int, char *);
 void shouldWait();
 void reInitCurCmd();
+<<<<<<< HEAD
 void do_pipe(char *);
+int aliasChecker();
+=======
+void do_pipe();
 void aliasChecker();
+>>>>>>> 5797b40d20633a22dfee0e26b4b4417c97922041
 
 
 //Initialization 
@@ -50,6 +55,8 @@ typedef struct _CMD {
 	int isBuiltin;
 	int wait;
 	int isCommandValue;
+	char* inFile;
+	char* outFile;
 } cmd;
 
 cmd cmdTab[MAXCMD];
@@ -83,3 +90,4 @@ int environmentcount;
 const char* path;
 const char* home;
 pid_t pid;
+int numPipes;

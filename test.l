@@ -18,6 +18,8 @@ int line_num = 1;
 
 bye|cd|exit|alias|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); return COMMAND; }
 
+"\$\{".*"\}" {yylval = strdup(yytext); return COMMAND; }
+
 [A-Za-z0-9\/\.]+ { yylval = strdup(yytext); return VALUE; }
 
 \".*\"    { //grab the info between the quotes and return as a value

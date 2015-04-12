@@ -9,7 +9,7 @@ void main(int argc, char **argv, char** environ) {
 	while(1){
 		prompt();
 		int CMD = getCommand();
-		aliasChecker();
+		CMD = aliasChecker();
 		switch(CMD){
 			case BYE:
 				//printf("CMD case: BYE\n");
@@ -46,13 +46,30 @@ int aliasChecker(){
 				//cmdTab[pos].name = alsTab[aliasPos].alsValue;
 				//cmdTab[pos].args[0] = alsTab[aliasPos].alsValue;
 				if(alsTab[aliasPos].used) {
-					printf("Error: Alias has circular reference. Exiting");
+					printf("Error: Alias has circular reference. Exiting\n");
 					return ERROR;
 				}
-				alsTab[aliasPos].used = true;
 
-				swapping = false;			
+				//printf("\nBefore - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
+				
+				my_string_buffer = yy_scan_string(alsTab[aliasPos].alsValue);
+    				int my_parse_result  = yyparse();
+    				yy_delete_buffer(my_string_buffer);
+				yylex_destroy();
+
+				cmdTab[pos] = cmdTab[tempNumTabCmds - 1];
+				//printf("After - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
+				printf("%s",cmdTab[pos].name);
+				alsTab[aliasPos].used = true;
+				swapping = false;
+				pos = -1;
+				break;			
 			}	
+		}
+		if(pos == -1){
+			printf("\n");
+			aliasPos = 0;
+			continue;
 		}
 		for(argPos; argPos <= cmdTab[pos].numArgs + 1; ++argPos){
 			printf("%s ",  cmdTab[pos].args[argPos]);
@@ -60,6 +77,7 @@ int aliasChecker(){
 		printf("%d\n", cmdTab[pos].isCommandValue);
 		argPos = 0;
 	}
+	return OK;
 	
 }
 
@@ -250,17 +268,25 @@ int do_it() {
 	      	//pipes
 	      	//printf("do_pipe: %s\n", curCmd->name);
 	    } else if(strcmp(curCmd->name, "alias") == 0){
-			//printf("IN SIDE OF ALIAS WITH COMMAND VALUE");
-			if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
-				return ERROR;
-			}
-			printf("Setting Alias: %s = %s\n", curCmd->args[1], curCmd->args[2]);
-			++numTabAls;
-			curAls->used = false;
-			curAls->alsName = curCmd->args[1];			
-			curAls->alsValue = curCmd->args[2];
-			++curAls;	
+		//printf("IN SIDE OF ALIAS WITH COMMAND VALUE");
+		if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
+			return ERROR;
 		}
+		int aliasPos = 0;
+		//Checking if the alias already exist
+		for(aliasPos; aliasPos < numTabAls; ++aliasPos){
+			if(strcmp(curCmd->args[1],alsTab[aliasPos].alsName) == 0){
+				alsTab[aliasPos].alsValue = curCmd->args[2];
+				return OK;
+			} 
+		}
+		printf("Setting Alias: %s = %s\n", curCmd->args[1], curCmd->args[2]);
+		++numTabAls;
+		curAls->used = false;
+		curAls->alsName = curCmd->args[1];			
+		curAls->alsValue = curCmd->args[2];
+		++curAls;	
+	   }
   	}
 }
 

@@ -20,6 +20,8 @@
 #define MAXCMD 100
 #define MAXALIAS 100
 
+#define READ 0
+#define WRITE 1
 
 void init(char**);
 void prompt();
@@ -29,7 +31,7 @@ int check_for_env(char * var);
 int getCommand();
 void processCommand();
 int do_it();
-void execute_it();
+void execute_command();
 void handle_errors();
 int understand_errors();
 void init_Scanner_Parser();
@@ -38,7 +40,7 @@ char* get_curr_dir();
 void changeDirectory(int, char *);
 void shouldWait();
 void reInitCurCmd();
-void do_pipe();
+void execute_pipe();
 int aliasChecker();
 
 

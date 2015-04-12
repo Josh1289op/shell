@@ -189,9 +189,9 @@ void processCommand(){
 	} else if(strcmp(curCmd->name,"empty")) { //if the input is not empty, then execute the command
 		shouldWait();
 		if(numPipes > 0){
-			do_pipe();
+			execute_pipe();		//execute commands that have pipes
 		} else {
-			execute_it();	// execute general commands using fork and exec
+			execute_command();	// execute general commands using fork and exec
 		}
 	}
 }
@@ -264,7 +264,7 @@ int do_it() {
   	}
 }
 
-void execute_it(){
+void execute_command(){
 	//CHECK SLIDES FOR MORE CODE EXAMPLES ON THIS METHOD/////////////////////////////
 
 	// Handle  command execution, pipelining, i/o redirection, and background processing.
@@ -288,6 +288,47 @@ void execute_it(){
     		break;
 	}
 }
+
+void execute_pipe(){
+	int pipefd[2];
+	int pipe_pid;
+
+	// make a pipe (fds go in pipefd[0] and pipefd[1])
+
+	pipe(pipefd);
+
+	pipe_pid = fork();
+
+	if (pipe_pid == 0) {
+		// child gets here and handles "grep Villanova"
+
+		// replace standard input with input part of pipe
+
+		dup2(pipefd[READ], 0);
+
+		// close unused hald of pipe
+
+		close(pipefd[WRITE]);
+
+		// execute grep
+
+		execvp(curCmd->name, curCmd->args);
+	} else {
+		// parent gets here and handles "cat scores"
+
+		// replace standard output with output part of pipe
+
+		dup2(pipefd[WRITE], 1);
+
+		// close unused unput half of pipe
+
+		close(pipefd[READ]);
+
+
+		execvp(curCmd->name, curCmd->args);
+	}
+}
+
 
 
 int understand_errors(){
@@ -346,6 +387,3 @@ void run_getenv (char * name)
     }
 }
 
-void do_pipe(){
-	
-}

@@ -20,6 +20,8 @@
 #define MAXCMD 100
 #define MAXALIAS 100
 
+typedef int YY_BUFFER_STATE;
+YY_BUFFER_STATE my_string_buffer;
 
 void init(char**);
 void prompt();

@@ -28,7 +28,7 @@ command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab
 	    |	COMMAND  axis { //printf("Command axis %s\n", $1); 
 	  					insertCmd.name = $1; 
 	  					insertCmd.args[0] = insertCmd.name;
-	  					if(swamping == true){
+	  					if(swapping == true){
 							cmdTab[tempNumTabCmds++] = insertCmd;
 						}else{
 							cmdTab[numTabCmds++] = insertCmd;
@@ -37,7 +37,7 @@ command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab
       | COMMAND { //printf("Command %s\n", $1); 
       			  insertCmd.name = $1; 
       			  insertCmd.args[0] = insertCmd.name;
-  	  		if(swamping == true){
+  	  		if(swapping == true){
 				cmdTab[tempNumTabCmds++] = insertCmd;
 			}else{
 				cmdTab[numTabCmds++] = insertCmd;
@@ -45,7 +45,7 @@ command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab
       			  }
       | VALUE axis  { insertCmd.name = $1; 
       					insertCmd.args[0] = insertCmd.name;
-	  		if(swamping == true){
+	  		if(swapping == true){
 				cmdTab[tempNumTabCmds++] = insertCmd;
 			}else{
 				cmdTab[numTabCmds++] = insertCmd;
@@ -54,7 +54,7 @@ command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab
       | VALUE   { //printf("value %s\n", $1);  
                 		insertCmd.name = $1; 
       			insertCmd.args[0] = insertCmd.name;
-	  		if(swamping == true){
+	  		if(swapping == true){
 				cmdTab[tempNumTabCmds++] = insertCmd;
 			}else{
 				cmdTab[numTabCmds++] = insertCmd;
@@ -74,10 +74,11 @@ inter: VALUE  { insertCmd.isCommandValue = true;
        			};
 
 pipe: PIPE { //printf("PIPE |\n"); 
+              ++numPipes;
               reInitCurCmd(true);
               insertCmd.name = "|"; 
               insertCmd.args[0] = insertCmd.name;
-  	     if(swamping == true){
+  	     if(swapping == true){
 		cmdTab[tempNumTabCmds++] = insertCmd;
 	     }else{
 		cmdTab[numTabCmds++] = insertCmd;

@@ -4,7 +4,7 @@ hello:   test.l test.y
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
 	flex test.l
 	bison -d test.y
-	gcc lex.yy.c test.tab.c main.c -o asShell
+	gcc lex.yy.c test.tab.c main.c -o asShell -g
 
 clean:
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
@@ -34,7 +34,7 @@ run: test.l test.y
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
 	flex test.l
 	bison -d test.y
-	gcc lex.yy.c test.tab.c main.c -o asShell
+	gcc lex.yy.c test.tab.c main.c -o asShell -g
 	./asShell
 	
 debugMem: test.l test.y

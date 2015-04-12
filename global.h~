@@ -20,6 +20,7 @@
 #define MAXCMD 100
 #define MAXALIAS 100
 
+int YY_BUFFER_STATE my_string_buffer;
 
 void init(char**);
 void prompt();
@@ -38,13 +39,9 @@ char* get_curr_dir();
 void changeDirectory(int, char *);
 void shouldWait();
 void reInitCurCmd();
-<<<<<<< HEAD
-void do_pipe(char *);
-int aliasChecker();
-=======
 void do_pipe();
-void aliasChecker();
->>>>>>> 5797b40d20633a22dfee0e26b4b4417c97922041
+int aliasChecker();
+
 
 
 //Initialization 

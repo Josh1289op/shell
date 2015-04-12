@@ -38,7 +38,7 @@ char* get_curr_dir();
 void changeDirectory(int, char *);
 void shouldWait();
 void reInitCurCmd();
-void do_pipe(char *);
+void do_pipe();
 void aliasChecker();
 
 
@@ -50,6 +50,8 @@ typedef struct _CMD {
 	int isBuiltin;
 	int wait;
 	int isCommandValue;
+	char* inFile;
+	char* outFile;
 } cmd;
 
 cmd cmdTab[MAXCMD];

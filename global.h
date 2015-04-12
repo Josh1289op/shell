@@ -58,6 +58,9 @@ cmd* curCmd;
 int numTabCmds;
 int cmdTabPos;
 
+//Using these variables to keep track of cmdTab organization for swamping aliases
+int swapping;
+int tempCmdTabEnd;
 
 
 typedef struct _ALS {

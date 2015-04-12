@@ -28,7 +28,7 @@ void run_getenv (char * name);
 int check_for_env(char * var);
 int getCommand();
 void processCommand();
-void do_it();
+int do_it();
 void execute_it();
 void handle_errors();
 int understand_errors();
@@ -38,6 +38,8 @@ char* get_curr_dir();
 void changeDirectory(int, char *);
 void shouldWait();
 void reInitCurCmd();
+void do_pipe(char *);
+void aliasChecker();
 
 
 //Initialization 
@@ -47,6 +49,7 @@ typedef struct _CMD {
 	int numArgs;
 	int isBuiltin;
 	int wait;
+	int isCommandValue;
 } cmd;
 
 cmd cmdTab[MAXCMD];
@@ -55,7 +58,10 @@ cmd* curCmd;
 int numTabCmds;
 int cmdTabPos;
 
-
+//Using these variables to keep track of cmdTab organization for swamping aliases
+int swapping;
+int cmdTabEnd;
+int tempCmdTabEnd;
 
 typedef struct _ALS {
 	char * alsName;			//Alias Variable String
@@ -76,5 +82,4 @@ char ** environment;
 int environmentcount;
 const char* path;
 const char* home;
-int isCommandValue;
 pid_t pid;

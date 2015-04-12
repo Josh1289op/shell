@@ -33,16 +33,21 @@ void main(int argc, char **argv, char** environ) {
 }
 
 void aliasChecker(){
+	tempCmdTabEnd = numTabCmds;
+
 	printf("Number of Aliases: %d\n", numTabAls);
 	int pos = 0; int argPos = 0; int aliasPos = 0;
 	for(pos; pos < numTabCmds; ++pos){
 		printf("%d: ", pos);
 		for(aliasPos; aliasPos < numTabAls; ++aliasPos){
 			if(strcmp(alsTab[aliasPos].alsName,cmdTab[pos].name) == 0) {
+				swapping = true;
 				printf("Found Alias: %s = %s ", alsTab[aliasPos].alsName, alsTab[aliasPos].alsValue);
-				cmdTab[pos].name = alsTab[aliasPos].alsValue;
-				cmdTab[pos].args[0] = alsTab[aliasPos].alsValue;
-				alsTab[aliasPos].used = true;			
+				//cmdTab[pos].name = alsTab[aliasPos].alsValue;
+				//cmdTab[pos].args[0] = alsTab[aliasPos].alsValue;
+				alsTab[aliasPos].used = true;
+
+				swamping = false;			
 			}	
 		}
 		for(argPos; argPos <= cmdTab[pos].numArgs + 1; ++argPos){
@@ -80,6 +85,8 @@ void init(char ** envp){
 	
 	numTabAls = 0;
 	curAls = &alsTab[0];
+
+	swapping = false;
 	// init all variables.
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)

@@ -25,23 +25,41 @@ start: command EOL  { return 0; };
 
 command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab[numTabCmds++] = insertCmd;}
       | command pipe command 
-	    |	COMMAND  axis { printf("Command axis %s\n", $1); 
+	    |	COMMAND  axis { //printf("Command axis %s\n", $1); 
 	  					insertCmd.name = $1; 
 	  					insertCmd.args[0] = insertCmd.name;
-	  					cmdTab[numTabCmds++] = insertCmd;
+	  					if(swamping == true){
+							cmdTab[tempNumTabCmds++] = insertCmd;
+						}else{
+							cmdTab[numTabCmds++] = insertCmd;
+						}
 	  				  }
-      | COMMAND { printf("Command %s\n", $1); 
+      | COMMAND { //printf("Command %s\n", $1); 
       			  insertCmd.name = $1; 
       			  insertCmd.args[0] = insertCmd.name;
-      			  cmdTab[numTabCmds++] = insertCmd;
+  	  		if(swamping == true){
+				cmdTab[tempNumTabCmds++] = insertCmd;
+			}else{
+				cmdTab[numTabCmds++] = insertCmd;
+			}
       			  }
       | VALUE axis  { insertCmd.name = $1; 
       					insertCmd.args[0] = insertCmd.name;
-	  					cmdTab[numTabCmds++] = insertCmd; }
+	  		if(swamping == true){
+				cmdTab[tempNumTabCmds++] = insertCmd;
+			}else{
+				cmdTab[numTabCmds++] = insertCmd;
+			} 
+		}
       | VALUE   { //printf("value %s\n", $1);  
-                insertCmd.name = $1; 
-      					insertCmd.args[0] = insertCmd.name;
-	  					cmdTab[numTabCmds++] = insertCmd; }
+                		insertCmd.name = $1; 
+      			insertCmd.args[0] = insertCmd.name;
+	  		if(swamping == true){
+				cmdTab[tempNumTabCmds++] = insertCmd;
+			}else{
+				cmdTab[numTabCmds++] = insertCmd;
+			} 
+ 		}
       | OPTION axis { insertCmd.name = $1; return 1; }
       | OPTION      { insertCmd.name = $1; return 1; };
 
@@ -49,7 +67,7 @@ axis: inter | axis inter ;
 
 inter: VALUE  { insertCmd.isCommandValue = true;
                 insertCmd.args[++insertCmd.numArgs] = $1;
-                printf("Inter value %s\n", insertCmd.args[insertCmd.numArgs]);
+                //printf("Inter value %s\n", insertCmd.args[insertCmd.numArgs]);
               }
        | OPTION { insertCmd.args[++insertCmd.numArgs] = $1;
        			  //printf("Inter option %s\n", insertCmd.args[insertCmd.numArgs]);

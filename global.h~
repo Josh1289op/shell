@@ -60,8 +60,8 @@ int cmdTabPos;
 
 //Using these variables to keep track of cmdTab organization for swamping aliases
 int swapping;
-int cmdTabEnd;
-int tempCmdTabEnd;
+int tempNumTabCmds;
+
 
 typedef struct _ALS {
 	char * alsName;			//Alias Variable String

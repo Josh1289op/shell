@@ -32,8 +32,8 @@ void main(int argc, char **argv, char** environ) {
 	}
 }
 
-void aliasChecker(){
-	tempCmdTabEnd = numTabCmds;
+int aliasChecker(){
+	tempNumTabCmds = numTabCmds;
 
 	printf("Number of Aliases: %d\n", numTabAls);
 	int pos = 0; int argPos = 0; int aliasPos = 0;
@@ -45,9 +45,13 @@ void aliasChecker(){
 				printf("Found Alias: %s = %s ", alsTab[aliasPos].alsName, alsTab[aliasPos].alsValue);
 				//cmdTab[pos].name = alsTab[aliasPos].alsValue;
 				//cmdTab[pos].args[0] = alsTab[aliasPos].alsValue;
+				if(alsTab[aliasPos].used) {
+					printf("Error: Alias has circular reference. Exiting");
+					return ERROR;
+				}
 				alsTab[aliasPos].used = true;
 
-				swamping = false;			
+				swapping = false;			
 			}	
 		}
 		for(argPos; argPos <= cmdTab[pos].numArgs + 1; ++argPos){
@@ -85,6 +89,7 @@ void init(char ** envp){
 	
 	numTabAls = 0;
 	curAls = &alsTab[0];
+
 
 	swapping = false;
 	// init all variables.

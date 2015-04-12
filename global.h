@@ -39,7 +39,7 @@ void changeDirectory(int, char *);
 void shouldWait();
 void reInitCurCmd();
 void do_pipe(char *);
-void aliasChecker();
+int aliasChecker();
 
 
 //Initialization 
@@ -60,7 +60,7 @@ int cmdTabPos;
 
 //Using these variables to keep track of cmdTab organization for swamping aliases
 int swapping;
-int tempCmdTabEnd;
+int tempNumTabCmds;
 
 
 typedef struct _ALS {

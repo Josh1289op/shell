@@ -114,7 +114,6 @@ void init_Scanner_Parser(){
 	cmdTabPos = 0;
 	//grab the next command from the table
 	curCmd = &cmdTab[0];
-	int aliasPos = 0;
 	for(aliasPos; aliasPos < numTabAls; ++aliasPos){
 		alsTab[aliasPos].used = false;
 	}

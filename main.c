@@ -112,6 +112,7 @@ void init_Scanner_Parser(){
 	home = getenv("HOME");
 	numTabCmds = 0;
 	cmdTabPos = 0;
+	numPipes = 0;
 	//grab the first command from the table
 	curCmd = &cmdTab[0];
 	int aliasPos = 0;
@@ -169,16 +170,17 @@ void setBuiltins(){
 }
 
 void processCommand(){
-	if(do_pipe()){
-
-	} else if (curCmd->isBuiltin) {
+	if (curCmd->isBuiltin) {
 		do_it();		// run built-in commands – no fork
 						// no exec; only your code + Unix
 						//system calls.
 	} else if(strcmp(curCmd->name,"empty")) { //if the input is not empty, then execute the command
 		shouldWait();
-		execute_it();	// execute general commands
-						//using fork and exec
+		if(numPipes > 0){
+			do_pipe();
+		} else {
+			execute_it();	// execute general commands using fork and exec
+		}
 	}
 }
 

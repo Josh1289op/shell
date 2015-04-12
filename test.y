@@ -56,6 +56,7 @@ inter: VALUE  { insertCmd.isCommandValue = true;
        			};
 
 pipe: PIPE { //printf("PIPE |\n"); 
+              ++numPipes;
               reInitCurCmd(true);
               insertCmd.name = "|"; 
               insertCmd.args[0] = insertCmd.name;

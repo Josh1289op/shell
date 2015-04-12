@@ -82,3 +82,4 @@ int environmentcount;
 const char* path;
 const char* home;
 pid_t pid;
+int numPipes;

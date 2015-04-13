@@ -64,6 +64,7 @@ int aliasChecker(){
 
 				//printf("tempNumTabCmds: %d\n", tempNumTabCmds);
 				cmdTab[pos] = cmdTab[tempNumTabCmds - 1];
+
 				//printf("After - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
 				//printf("%s",cmdTab[pos].name);
 				alsTab[aliasPos].used = true;

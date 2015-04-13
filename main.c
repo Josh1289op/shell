@@ -171,7 +171,7 @@ void init_Scanner_Parser(){
 	for(i; i < numPipes; ++i){
 		pipeFds[i] = NULL;
 	}
-	numPipes = 0;pipePos = 0;
+	numPipes = 0; pipePos = 0; lastPipePos = 0;
 }
 
 //call this everytime you finish with the command you are currently working on
@@ -322,10 +322,10 @@ void execute_command(){
 	// Utilize a command table whose components are plugged in during parsing by yacc.
 
 	int status;
-	switch(pid = fork()) {
+	switch(pids = fork()) {
 		case 0:
 			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
-			execvp(curCmd->name, curCmd->args);
+			status = execvp(curCmd->name, curCmd->args);
 			if(status){
 				printf("%s: command not recognized.\n", curCmd->name);
 				exit(0);
@@ -334,7 +334,7 @@ void execute_command(){
 
 		default:
 			if(curCmd->wait){
-    			waitpid(pid, &status, 0);
+    			waitpid(pids, &status, 0);
     		}
     		break;
 	}
@@ -344,51 +344,63 @@ void execute_pipe(){
 	//printf("inside execute pipe\n");
 
 	if(pipeFds[pipePos] == NULL){
-		int fd[2];
-		pipeFds[pipePos] = fd;
-		pipe(pipeFds[pipePos]);
+		int i = 0;
+		for(i; i < numPipes; ++ i){
+			int fd[2];
+			pipeFds[i] = fd;
+			pipe(pipeFds[i]);
+		}
 	}
 	
 
-	if(cmdTabPos == 1)
+	//printf("numPipes: %d\n", numPipes);
 		
-		switch (pid = fork()) {
-			case 0: // child 
+	switch (pid = fork()) {
+		case 0: // child 
+			if(cmdTabPos == 1){ 				//first command before pipe; uses stdIn
 				dup2(pipeFds[pipePos][1], 1);	// this end of the pipe becomes the standard output 
 				close(pipeFds[pipePos][0]); 		// this process don't need the other end 
-				execvp(curCmd->name, curCmd->args);	// run the command 
-				perror(curCmd->name);	// it failed! 
-
-			default: // parent does nothing 
-				break;
-
-			case -1:
-				perror("fork");
-				exit(1);
-		}
-	if(cmdTabPos == 3){
-		//printf("Command: %s %s %s %s\n", curCmd->name, curCmd->args[1], curCmd->args[2], curCmd->args[3]);
-		switch (pid = fork()) {
-			case 0: // child 
+			} else if (cmdTabPos == lastPipePos + 2) {	//last command after all pipes; uses stdOut
 				dup2(pipeFds[pipePos][0], 0);	// this end of the pipe becomes the standard input 
 				close(pipeFds[pipePos][1]);		// this process doesn't need the other end 
-				execvp(curCmd->name, curCmd->args);	// run the command 
-				perror(curCmd->name);	// it failed! 
+			} else {							//cmds between pipes; change in and out;
+				dup2(pipeFds[pipePos][0], 0);	// this end of the pipe becomes the standard input
+				dup2(pipeFds[++pipePos][1], 1);	// this end of the pipe becomes the standard output 
+			}
 
-			default: // parent does nothing 
-				break;
-
-			case -1:
-				perror("fork");
+			pipeStatus = execvp(curCmd->name, curCmd->args);	// run the command 
+			if(pipeStatus){
+				fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(pipeStatus));
 				exit(1);
-		}
+			}
+			perror(curCmd->name);	// it failed!
 
-		close(pipeFds[pipePos][0]); close(pipeFds[pipePos][1]); 	// this is important! close both file descriptors on the pipe 
+		default: // parent does nothing 
+			break;
 
-		while ((pid = wait(&pipeStatus)) != -1)	// pick up all the dead children 
-			fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(pipeStatus));
-		
+		case -1:
+			printf("fork error\n");
+			perror("fork");
+			exit(1);
 	}
+
+	if (cmdTabPos == lastPipePos + 2) {
+		int k;
+		for(k=0; k < numPipes ; ++k){
+			close(pipeFds[k][0]); close(pipeFds[k][1]); 	// this is important! close both file descriptors on the pipe 
+		}
+	}
+
+	//wait(&pipeStatus);
+	
+	//if(pid = wait(&pipeStatus) == -1 || pipeStatus){
+	//	fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(pipeStatus));
+	//}
+	
+	//while ((pid = wait(&pipeStatus)) != -1)	// pick up all the dead children 
+		//fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(pipeStatus));
+	
+	
 }
 
 

@@ -80,8 +80,10 @@ pipe: PIPE { //printf("PIPE |\n");
               insertCmd.args[0] = insertCmd.name;
         	    if(swapping == true){
           		  cmdTab[tempNumTabCmds++] = insertCmd;
+                lastPipePos = tempNumTabCmds - 2;
           	  }else{
           		  cmdTab[numTabCmds++] = insertCmd;
+                lastPipePos = numTabCmds - 1;
           	  } 
 	 };
 

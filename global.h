@@ -93,7 +93,7 @@ char ** environment;
 int environmentcount;
 const char* path;
 const char* home;
-pid_t pid;
+pid_t pids;
 
 int pid;
 int pipeStatus;
@@ -101,3 +101,4 @@ int pipeStatus;
 int* pipeFds[49];
 int numPipes;
 int pipePos;
+int lastPipePos;

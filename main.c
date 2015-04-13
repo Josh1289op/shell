@@ -31,6 +31,7 @@ void main(int argc, char **argv, char** environ) {
 					reInitCurCmd(false);
 					curCmd = &cmdTab[cmdTabPos];
 				}
+				
 				break;
 		}
 		reInitCurCmd(false);
@@ -171,7 +172,7 @@ void init_Scanner_Parser(){
 	for(i; i < numPipes; ++i){
 		pipeFds[i] = NULL;
 	}
-	numPipes = 0; pipePos = 0; lastPipePos = 0;
+	numPipes = 0; pipePos = 0; lastPipePos = 0; pipePidPos = 0;
 }
 
 //call this everytime you finish with the command you are currently working on
@@ -355,22 +356,22 @@ void execute_pipe(){
 
 	//printf("numPipes: %d\n", numPipes);
 		
-	switch (pid = fork()) {
+	switch (pid[pipePidPos++] = fork()) {
 		case 0: // child 
 			if(cmdTabPos == 1){ 				//first command before pipe; uses stdIn
-				dup2(pipeFds[pipePos][1], 1);	// this end of the pipe becomes the standard output 
+				dup2(pipeFds[pipePos][1], STDOUT_FILENO);	// this end of the pipe becomes the standard output 
 				close(pipeFds[pipePos][0]); 		// this process don't need the other end 
 			} else if (cmdTabPos == lastPipePos + 2) {	//last command after all pipes; uses stdOut
-				dup2(pipeFds[pipePos][0], 0);	// this end of the pipe becomes the standard input 
+				dup2(pipeFds[pipePos][0], STDIN_FILENO);	// this end of the pipe becomes the standard input 
 				close(pipeFds[pipePos][1]);		// this process doesn't need the other end 
 			} else {							//cmds between pipes; change in and out;
-				dup2(pipeFds[pipePos][0], 0);	// this end of the pipe becomes the standard input
-				dup2(pipeFds[++pipePos][1], 1);	// this end of the pipe becomes the standard output 
+				dup2(pipeFds[pipePos][0], STDIN_FILENO);	// this end of the pipe becomes the standard input
+				dup2(pipeFds[++pipePos][1], STDOUT_FILENO);	// this end of the pipe becomes the standard output 
 			}
 
 			pipeStatus = execvp(curCmd->name, curCmd->args);	// run the command 
 			if(pipeStatus){
-				fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(pipeStatus));
+				fprintf(stderr, "inside fork: process %d exits with %d\n", pid[pipePidPos - 1], pipeStatus);
 				exit(1);
 			}
 			perror(curCmd->name);	// it failed!
@@ -389,16 +390,21 @@ void execute_pipe(){
 		for(k=0; k < numPipes ; ++k){
 			close(pipeFds[k][0]); close(pipeFds[k][1]); 	// this is important! close both file descriptors on the pipe 
 		}
+		for(k=0; k <= numPipes ; ++k){
+			waitpid(pid[k], &pipeStatus, 0);
+			fprintf(stderr, "process %d exits with %d\n", pid[k], pipeStatus);
+		}
+		
 	}
 
-	//wait(&pipeStatus);
+	
 	
 	//if(pid = wait(&pipeStatus) == -1 || pipeStatus){
 	//	fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(pipeStatus));
 	//}
 	
 	//while ((pid = wait(&pipeStatus)) != -1)	// pick up all the dead children 
-		//fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(pipeStatus));
+		//fprintf(stderr, "process %d exits with %d\n", pid, pipeStatus);
 	
 	
 }

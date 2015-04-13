@@ -95,7 +95,8 @@ const char* path;
 const char* home;
 pid_t pids;
 
-int pid;
+int pid[100];
+int pipePidPos;
 int pipeStatus;
 
 int* pipeFds[49];

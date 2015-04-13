@@ -57,8 +57,10 @@ typedef struct _CMD {
 	int isBuiltin;
 	int wait;
 	int isCommandValue;
-	char* inFile;
-	char* outFile;
+
+	int inFd;
+	int outFd;
+	int errFd;
 } cmd;
 
 cmd cmdTab[MAXCMD];
@@ -92,4 +94,10 @@ int environmentcount;
 const char* path;
 const char* home;
 pid_t pid;
+
+int pid;
+int status;
 int numPipes;
+int fd[2];
+
+int firstPipe;

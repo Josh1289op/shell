@@ -12,7 +12,7 @@ void main(int argc, char **argv, char** environ) {
 		CMD = aliasChecker();
 		switch(CMD){
 			case BYE:
-				//printf("CMD case: BYE\n");
+				printf("CMD case: BYE\n");
 				exit(0);
 			case ERROR:
 				//printf("CMD case: ERROR\n");
@@ -38,7 +38,7 @@ int aliasChecker(){
 	printf("Number of Aliases: %d\n", numTabAls);
 	int pos = 0; int argPos = 0; int aliasPos = 0;
 	for(pos; pos < numTabCmds; ++pos){
-		printf("%d: ", pos);
+		
 		for(aliasPos; aliasPos < numTabAls; ++aliasPos){
 			if(strcmp(alsTab[aliasPos].alsName,cmdTab[pos].name) == 0) {
 				swapping = true;
@@ -71,13 +71,17 @@ int aliasChecker(){
 			aliasPos = 0;
 			continue;
 		}
+		//print table
+		printf("%d: ", pos);
 		for(argPos; argPos <= cmdTab[pos].numArgs + 1; ++argPos){
 			printf("%s ",  cmdTab[pos].args[argPos]);
 		}
 		printf("%d\n", cmdTab[pos].isCommandValue);
 		argPos = 0;
 	}
-	return OK;
+	//printf("finished alias checker\n");
+	if(strcmp(curCmd->name,"bye") == 0) return BYE;
+	else return OK;
 	
 }
 
@@ -130,6 +134,7 @@ int getCommand(){
 	if (yyparse()){
 		return understand_errors();
 	} else if (strcmp(curCmd->name,"bye") == 0) {
+		//printf("bye returned in getCommand\n");
 		return BYE;
 	} else {
 		setBuiltins();
@@ -143,6 +148,7 @@ void init_Scanner_Parser(){
 	numTabCmds = 0;
 	cmdTabPos = 0;
 	numPipes = 0;
+	firstPipe = true;
 	//grab the first command from the table
 	curCmd = &cmdTab[0];
 	int aliasPos = 0;
@@ -196,6 +202,7 @@ void setBuiltins(){
 			temp->isBuiltin = true;
 			//printf("isBuiltin = true\n");
 		}
+		//else printf("isBuiltin = false\n");
 	}
 }
 
@@ -296,7 +303,6 @@ void execute_command(){
 	// Handle  command execution, pipelining, i/o redirection, and background processing.
 	// Utilize a command table whose components are plugged in during parsing by yacc.
 
-	int status; int err = 0;
 	switch(pid = fork()) {
 		case 0:
 			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
@@ -316,42 +322,52 @@ void execute_command(){
 }
 
 void execute_pipe(){
-	int pipefd[2];
-	int pipe_pid;
+	//printf("inside execute pipe\n");
+	if(firstPipe){
+		firstPipe = false;
+		pipe(fd);
+	}
+	
+	
 
-	// make a pipe (fds go in pipefd[0] and pipefd[1])
+	if(cmdTabPos == 1)
+		
+		switch (pid = fork()) {
+			case 0: // child 
+				dup2(fd[1], 1);	// this end of the pipe becomes the standard output 
+				close(fd[0]); 		// this process don't need the other end 
+				execvp(curCmd->name, curCmd->args);	// run the command 
+				perror(curCmd->name);	// it failed! 
 
-	pipe(pipefd);
+			default: // parent does nothing 
+				break;
 
-	pipe_pid = fork();
+			case -1:
+				perror("fork");
+				exit(1);
+		}
+	if(cmdTabPos == 3){
+		//printf("Command: %s %s %s %s\n", curCmd->name, curCmd->args[1], curCmd->args[2], curCmd->args[3]);
+		switch (pid = fork()) {
+			case 0: // child 
+				dup2(fd[0], 0);	// this end of the pipe becomes the standard input 
+				close(fd[1]);		// this process doesn't need the other end 
+				execvp(curCmd->name, curCmd->args);	// run the command 
+				perror(curCmd->name);	// it failed! 
 
-	if (pipe_pid == 0) {
-		// child gets here and handles "grep Villanova"
+			default: // parent does nothing 
+				break;
 
-		// replace standard input with input part of pipe
+			case -1:
+				perror("fork");
+				exit(1);
+		}
 
-		dup2(pipefd[READ], 0);
+		close(fd[0]); close(fd[1]); 	// this is important! close both file descriptors on the pipe 
 
-		// close unused hald of pipe
-
-		close(pipefd[WRITE]);
-
-		// execute grep
-
-		execvp(curCmd->name, curCmd->args);
-	} else {
-		// parent gets here and handles "cat scores"
-
-		// replace standard output with output part of pipe
-
-		dup2(pipefd[WRITE], 1);
-
-		// close unused unput half of pipe
-
-		close(pipefd[READ]);
-
-
-		execvp(curCmd->name, curCmd->args);
+		while ((pid = wait(&status)) != -1)	// pick up all the dead children 
+			fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
+		
 	}
 }
 

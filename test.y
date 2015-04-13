@@ -78,11 +78,11 @@ pipe: PIPE { //printf("PIPE |\n");
               reInitCurCmd(true);
               insertCmd.name = "|"; 
               insertCmd.args[0] = insertCmd.name;
-  	     if(swapping == true){
-		cmdTab[tempNumTabCmds++] = insertCmd;
-	     }else{
-		cmdTab[numTabCmds++] = insertCmd;
-	     } 
+        	    if(swapping == true){
+          		  cmdTab[tempNumTabCmds++] = insertCmd;
+          	  }else{
+          		  cmdTab[numTabCmds++] = insertCmd;
+          	  } 
 	 };
 
 %%

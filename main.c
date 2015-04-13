@@ -88,13 +88,14 @@ int aliasChecker(){
 
 void printTable(){
 	int pos = 0; int argPos = 0;
-	//print table
-	printf("%d: ", pos);
-	for(argPos; argPos <= cmdTab[pos].numArgs + 1; ++argPos){
-		printf("%s ",  cmdTab[pos].args[argPos]);
+	for(pos; pos < numTabCmds; ++pos){
+		printf("%d: ", pos);
+		for(argPos; argPos <= cmdTab[pos].numArgs + 1; ++argPos){
+			printf("%s ",  cmdTab[pos].args[argPos]);
+		}
+		printf("%d\n", cmdTab[pos].isCommandValue);
+		argPos = 0;
 	}
-	printf("%d\n", cmdTab[pos].isCommandValue);
-	argPos = 0;
 }
 
 void init(char ** envp){
@@ -336,18 +337,19 @@ void execute_command(){
 void execute_pipe(){
 	//printf("inside execute pipe\n");
 
-	int fd[2];
-	pipeFds[pipePos] = fd;
-	pipe(pipeFds[pipePos]);
-	
+	if(pipeFds[pipePos] == NULL){
+		int fd[2];
+		pipeFds[pipePos] = fd;
+		pipe(pipeFds[pipePos]);
+	}
 	
 
 	if(cmdTabPos == 1)
 		
 		switch (pid = fork()) {
 			case 0: // child 
-				dup2(fd[1], 1);	// this end of the pipe becomes the standard output 
-				close(fd[0]); 		// this process don't need the other end 
+				dup2(pipeFds[pipePos][1], 1);	// this end of the pipe becomes the standard output 
+				close(pipeFds[pipePos][0]); 		// this process don't need the other end 
 				execvp(curCmd->name, curCmd->args);	// run the command 
 				perror(curCmd->name);	// it failed! 
 
@@ -362,8 +364,8 @@ void execute_pipe(){
 		//printf("Command: %s %s %s %s\n", curCmd->name, curCmd->args[1], curCmd->args[2], curCmd->args[3]);
 		switch (pid = fork()) {
 			case 0: // child 
-				dup2(fd[0], 0);	// this end of the pipe becomes the standard input 
-				close(fd[1]);		// this process doesn't need the other end 
+				dup2(pipeFds[pipePos][0], 0);	// this end of the pipe becomes the standard input 
+				close(pipeFds[pipePos][1]);		// this process doesn't need the other end 
 				execvp(curCmd->name, curCmd->args);	// run the command 
 				perror(curCmd->name);	// it failed! 
 
@@ -375,7 +377,7 @@ void execute_pipe(){
 				exit(1);
 		}
 
-		close(fd[0]); close(fd[1]); 	// this is important! close both file descriptors on the pipe 
+		close(pipeFds[pipePos][0]); close(pipeFds[pipePos][1]); 	// this is important! close both file descriptors on the pipe 
 
 		while ((pid = wait(&status)) != -1)	// pick up all the dead children 
 			fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));

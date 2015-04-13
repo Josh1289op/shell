@@ -46,7 +46,7 @@ void shouldWait();
 void reInitCurCmd();
 void execute_pipe();
 int aliasChecker();
-
+void printTable();
 
 
 //Initialization 

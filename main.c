@@ -9,7 +9,12 @@ void main(int argc, char **argv, char** environ) {
 	while(1){
 		prompt();
 		int CMD = getCommand();
+		printf("----------\n");
+		printTable();
 		CMD = aliasChecker();
+		printf("----------\n");
+		printTable();
+		printf("----------\n");
 		switch(CMD){
 			case BYE:
 				printf("CMD case: BYE\n");
@@ -35,7 +40,7 @@ void main(int argc, char **argv, char** environ) {
 int aliasChecker(){
 	tempNumTabCmds = numTabCmds;
 
-	printf("Number of Aliases: %d\n", numTabAls);
+	//printf("Number of Aliases: %d\n", numTabAls);
 	int pos = 0; int argPos = 0; int aliasPos = 0;
 	for(pos; pos < numTabCmds; ++pos){
 		
@@ -57,9 +62,10 @@ int aliasChecker(){
     				yy_delete_buffer(my_string_buffer);
 				yylex_destroy();
 
+				//printf("tempNumTabCmds: %d\n", tempNumTabCmds);
 				cmdTab[pos] = cmdTab[tempNumTabCmds - 1];
 				//printf("After - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
-				printf("%s",cmdTab[pos].name);
+				//printf("%s",cmdTab[pos].name);
 				alsTab[aliasPos].used = true;
 				swapping = false;
 				pos = -1;
@@ -71,18 +77,23 @@ int aliasChecker(){
 			aliasPos = 0;
 			continue;
 		}
-		//print table
-		printf("%d: ", pos);
-		for(argPos; argPos <= cmdTab[pos].numArgs + 1; ++argPos){
-			printf("%s ",  cmdTab[pos].args[argPos]);
-		}
-		printf("%d\n", cmdTab[pos].isCommandValue);
-		argPos = 0;
+		
 	}
 	//printf("finished alias checker\n");
 	if(strcmp(curCmd->name,"bye") == 0) return BYE;
 	else return OK;
 	
+}
+
+void printTable(){
+	int pos = 0; int argPos = 0;
+	//print table
+	printf("%d: ", pos);
+	for(argPos; argPos <= cmdTab[pos].numArgs + 1; ++argPos){
+		printf("%s ",  cmdTab[pos].args[argPos]);
+	}
+	printf("%d\n", cmdTab[pos].isCommandValue);
+	argPos = 0;
 }
 
 void init(char ** envp){

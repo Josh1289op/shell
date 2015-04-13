@@ -160,7 +160,7 @@ void init_Scanner_Parser(){
 	numTabCmds = 0;
 	cmdTabPos = 0;
 	numPipes = 0;
-	firstPipe = true;
+	pipePos = 0;
 	//grab the first command from the table
 	curCmd = &cmdTab[0];
 	int aliasPos = 0;
@@ -335,10 +335,10 @@ void execute_command(){
 
 void execute_pipe(){
 	//printf("inside execute pipe\n");
-	if(firstPipe){
-		firstPipe = false;
-		pipe(fd);
-	}
+
+	int fd[2];
+	pipeFds[pipePos] = fd;
+	pipe(pipeFds[pipePos]);
 	
 	
 

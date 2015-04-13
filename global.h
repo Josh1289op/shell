@@ -97,7 +97,7 @@ pid_t pid;
 
 int pid;
 int status;
-int numPipes;
-int fd[2];
 
-int firstPipe;
+int* pipeFds[49];
+int numPipes;
+int pipePos;

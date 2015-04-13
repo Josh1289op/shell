@@ -49,6 +49,7 @@ int aliasChecker();
 void printTable();
 
 
+
 //Initialization 
 typedef struct _CMD {
 	char* name;
@@ -63,6 +64,7 @@ typedef struct _CMD {
 	int errFd;
 } cmd;
 
+void printTempTable(cmd * tempTable);
 cmd cmdTab[MAXCMD];
 cmd insertCmd;
 cmd* curCmd;
@@ -103,3 +105,10 @@ int* pipeFds[49];
 int numPipes;
 int pipePos;
 int lastPipePos;
+
+
+// Error Handling Variables
+int errorCode;
+int hasErrors;
+
+

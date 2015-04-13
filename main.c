@@ -160,14 +160,18 @@ void init_Scanner_Parser(){
 	home = getenv("HOME");
 	numTabCmds = 0;
 	cmdTabPos = 0;
-	numPipes = 0;
-	pipePos = 0;
+	
 	//grab the first command from the table
 	curCmd = &cmdTab[0];
 	int aliasPos = 0;
 	for(aliasPos; aliasPos < numTabAls; ++aliasPos){
 		alsTab[aliasPos].used = false;
 	}
+	int i = 0;
+	for(i; i < numPipes; ++i){
+		pipeFds[i] = NULL;
+	}
+	numPipes = 0;pipePos = 0;
 }
 
 //call this everytime you finish with the command you are currently working on
@@ -226,6 +230,7 @@ void processCommand(){
 						//system calls.
 	} else if(strcmp(curCmd->name,"empty")) { //if the input is not empty, then execute the command
 		shouldWait();
+		//printf("numPipes: %d\n", numPipes);
 		if(numPipes > 0){
 			execute_pipe();		//execute commands that have pipes
 		} else {
@@ -316,6 +321,7 @@ void execute_command(){
 	// Handle  command execution, pipelining, i/o redirection, and background processing.
 	// Utilize a command table whose components are plugged in during parsing by yacc.
 
+	int status;
 	switch(pid = fork()) {
 		case 0:
 			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
@@ -379,8 +385,8 @@ void execute_pipe(){
 
 		close(pipeFds[pipePos][0]); close(pipeFds[pipePos][1]); 	// this is important! close both file descriptors on the pipe 
 
-		while ((pid = wait(&status)) != -1)	// pick up all the dead children 
-			fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
+		while ((pid = wait(&pipeStatus)) != -1)	// pick up all the dead children 
+			fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(pipeStatus));
 		
 	}
 }

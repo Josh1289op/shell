@@ -96,7 +96,7 @@ const char* home;
 pid_t pid;
 
 int pid;
-int status;
+int pipeStatus;
 
 int* pipeFds[49];
 int numPipes;

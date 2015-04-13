@@ -28,6 +28,9 @@ void main(int argc, char **argv, char** environ) {
 				while(cmdTabPos++ < numTabCmds){
 					//printf("curCmd: %s %s, %s\n", curCmd->name, curCmd->args[1], curCmd->args[2]);
 					processCommand();
+					if(hasErrors) {					
+						handle_errors();
+					}
 					reInitCurCmd(false);
 					curCmd = &cmdTab[cmdTabPos];
 				}
@@ -38,35 +41,57 @@ void main(int argc, char **argv, char** environ) {
 }
 
 int aliasChecker(){
-	tempNumTabCmds = numTabCmds;
+	
 
 	//printf("Number of Aliases: %d\n", numTabAls);
 	int pos = 0; int argPos = 0; int aliasPos = 0;
 	for(pos; pos < numTabCmds; ++pos){
-		
-		for(aliasPos; aliasPos < numTabAls; ++aliasPos){
+		tempNumTabCmds = numTabCmds;
+		for(aliasPos = 0; aliasPos < numTabAls; ++aliasPos){
 			if(strcmp(alsTab[aliasPos].alsName,cmdTab[pos].name) == 0) {
 				swapping = true;
-				printf("Found Alias: %s = %s ", alsTab[aliasPos].alsName, alsTab[aliasPos].alsValue);
-				//cmdTab[pos].name = alsTab[aliasPos].alsValue;
-				//cmdTab[pos].args[0] = alsTab[aliasPos].alsValue;
+				//printf("Found Alias: %s = %s \n", alsTab[aliasPos].alsName, alsTab[aliasPos].alsValue);
 				if(alsTab[aliasPos].used) {
-					printf("Error: Alias has circular reference. Exiting\n");
+					errorCode = 4;
+					hasErrors = true;
 					return ERROR;
 				}
-
-				//printf("\nBefore - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
 				
+				//printf("\nBefore - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
+				//printTable();
 				my_string_buffer = yy_scan_string(alsTab[aliasPos].alsValue);
     				int my_parse_result  = yyparse();
     				yy_delete_buffer(my_string_buffer);
 				yylex_destroy();
-
-				//printf("tempNumTabCmds: %d\n", tempNumTabCmds);
-				cmdTab[pos] = cmdTab[tempNumTabCmds - 1];
-
+				//Adding support for multiple cmds in one alias
+				int i = 0;
+				cmd tempCmdTab[MAXCMD];
+				//Get all of the cmds before alias and put them in temp table
+				for(i = 0; i < pos + 1; ++i){
+					tempCmdTab[i] = cmdTab[i];
+				}
+				//printTempTable(tempCmdTab);
+				int j = 0;
+				int tempAliasPos = pos;
+				//Move all the new cmds where they go in the table
+				for(j = numTabCmds; j < tempNumTabCmds; ++j){
+					tempCmdTab[tempAliasPos++] = cmdTab[j];
+				}
+				//printTempTable(tempCmdTab);
+				//Move the rest of the cmds below the new cmds
+				for(i; i < numTabCmds; ++i){
+					tempCmdTab[tempAliasPos++] = cmdTab[i];
+				}
+				//printTempTable(tempCmdTab);
+				//Copy the new table over to the old table
+				reInitCurCmd(false);
+				for(i = 0; i < tempNumTabCmds - 1; ++i){
+					cmdTab[i] = tempCmdTab[i];				
+				}
+				numTabCmds = i;
+				//printTable();
+				//printf("tempNumTabCmds: %d\n", tempNumTabCmds);					
 				//printf("After - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
-				//printf("%s",cmdTab[pos].name);
 				alsTab[aliasPos].used = true;
 				swapping = false;
 				pos = -1;
@@ -74,7 +99,6 @@ int aliasChecker(){
 			}	
 		}
 		if(pos == -1){
-			printf("\n");
 			aliasPos = 0;
 			continue;
 		}
@@ -96,6 +120,19 @@ void printTable(){
 		printf("%d\n", cmdTab[pos].isCommandValue);
 		argPos = 0;
 	}
+}
+void printTempTable(cmd * tempTable){
+	printf("?****** TEMP TABLE *****?\n");
+	int pos = 0; int argPos = 0;
+	for(pos; pos < numTabCmds; ++pos){
+		printf("%d: ", pos);
+		for(argPos; argPos <= tempTable[pos].numArgs + 1; ++argPos){
+			printf("%s ",  tempTable[pos].args[argPos]);
+		}
+		printf("%d\n", tempTable[pos].isCommandValue);
+		argPos = 0;
+	}
+	printf("?****** END TEMP TABLE *****?\n");
 }
 
 void init(char ** envp){
@@ -127,6 +164,8 @@ void init(char ** envp){
 
 
 	swapping = false;
+	hasErrors = false;
+	errorCode = 0;
 	// init all variables.
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)
@@ -171,7 +210,7 @@ void init_Scanner_Parser(){
 	for(i; i < numPipes; ++i){
 		pipeFds[i] = NULL;
 	}
-	numPipes = 0; pipePos = 0; lastPipePos = 0;
+	numPipes = 0; pipePos = 0; lastPipePos = 0;	hasErrors = false; errorCode = 0;
 }
 
 //call this everytime you finish with the command you are currently working on
@@ -274,6 +313,10 @@ int do_it() {
 		} 
 	    } else if(strcmp(curCmd->name, "exit") == 0){
 	      	exit(0);
+	    } else if(strcmp(curCmd->name, "setenv") == 0 || strcmp(curCmd->name, "unsetenv") == 0 || strcmp(curCmd->name, "getenv") == 0){
+		errorCode = 3;
+		hasErrors = true;
+		return ERROR;
 	    }
   	} else {
 	    curCmd->isCommandValue = false;
@@ -281,20 +324,37 @@ int do_it() {
 	    if(strcmp(curCmd->name,"cd") == 0){
 	      	changeDirectory(false, curCmd->args[1]);
 	    }else if(strcmp(curCmd->name, "setenv") == 0){
+		if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
+			errorCode = 1;
+			hasErrors = true;
+			return ERROR;
+		}
 	      	//setenv variable value
 	      	setenv(curCmd->args[1], curCmd->args[2], 1);
 	      	run_getenv(curCmd->args[1]);
 	    } else if(strcmp(curCmd->name, "unsetenv") == 0){
+		if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
+			errorCode = 2;
+			hasErrors = true;
+			return ERROR;
+		}
 	      	unsetenv(curCmd->args[1]);
 	    }else if(strcmp(curCmd->name, "getenv") == 0){
+		if(curCmd->args[1] == NULL){
+			errorCode = 2;
+			hasErrors = true;
+			return ERROR;
+		}
 	      	//get a variable value
 	      	run_getenv(curCmd->args[1]);
 	    } else if(strcmp(curCmd->name, "|") == 0){
 	      	//pipes
 	      	//printf("do_pipe: %s\n", curCmd->name);
 	    } else if(strcmp(curCmd->name, "alias") == 0){
-		//printf("IN SIDE OF ALIAS WITH COMMAND VALUE");
+		
 		if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
+			errorCode = 1;
+			hasErrors = true;
 			return ERROR;
 		}
 		int aliasPos = 0;
@@ -419,6 +479,32 @@ void handle_errors(){
 	// In this case you have to recover by “eating”
 	// the rest of the command.
 	// To do this: use yylex() directly.
+
+	switch(errorCode){
+		case 0:
+			fprintf(stderr, "Unknown Error: %s\n", curCmd->name);
+			break;
+		case 1:
+			fprintf(stderr, "Error: The \"%s\" command takes two arguments \nInput: %s %s %s \n", curCmd->name, curCmd->name, curCmd->args[1], curCmd->args[2]);
+			break;
+		case 2:
+			fprintf(stderr, "Error: The \"%s\" command takes one argument \nInput: %s %s \n", curCmd->name,curCmd->name, curCmd->args[1]);
+			break;
+		case 3:
+			fprintf(stderr, "Error: The \"%s\" command takes arguments and you supplied none. \nInput: %s \n", curCmd->name, curCmd->name);
+			break;
+		case 4:
+			fprintf(stderr, "Error: The alias \"%s\" has a circular reference.\n", curCmd->name);
+			break;
+		case 5:
+			fprintf(stderr, "Unknown Error: %s\n", curCmd->name);
+			break;
+
+
+	}
+
+	errorCode = 0;
+	hasErrors = false;
 }
 
 

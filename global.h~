@@ -20,7 +20,12 @@
 #define MAXCMD 100
 #define MAXALIAS 100
 
-int YY_BUFFER_STATE my_string_buffer;
+
+#define READ 0
+#define WRITE 1
+
+typedef int YY_BUFFER_STATE;
+YY_BUFFER_STATE my_string_buffer;
 
 void init(char**);
 void prompt();
@@ -30,7 +35,7 @@ int check_for_env(char * var);
 int getCommand();
 void processCommand();
 int do_it();
-void execute_it();
+void execute_command();
 void handle_errors();
 int understand_errors();
 void init_Scanner_Parser();
@@ -39,8 +44,9 @@ char* get_curr_dir();
 void changeDirectory(int, char *);
 void shouldWait();
 void reInitCurCmd();
-void do_pipe();
+void execute_pipe();
 int aliasChecker();
+void printTable();
 
 
 
@@ -52,10 +58,13 @@ typedef struct _CMD {
 	int isBuiltin;
 	int wait;
 	int isCommandValue;
-	char* inFile;
-	char* outFile;
+
+	int inFd;
+	int outFd;
+	int errFd;
 } cmd;
 
+void printTempTable(cmd * tempTable);
 cmd cmdTab[MAXCMD];
 cmd insertCmd;
 cmd* curCmd;
@@ -86,5 +95,19 @@ char ** environment;
 int environmentcount;
 const char* path;
 const char* home;
-pid_t pid;
+pid_t pids;
+
+int pid;
+int pipeStatus;
+
+int* pipeFds[49];
 int numPipes;
+int pipePos;
+int lastPipePos;
+
+
+// Error Handling Variables
+int errorCode;
+int hasError;
+
+

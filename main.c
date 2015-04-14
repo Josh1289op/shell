@@ -163,7 +163,6 @@ void init(char ** envp){
 	numTabAls = 0;
 	curAls = &alsTab[0];
 
-
 	swapping = false;
 	hasErrors = false;
 	errorCode = 0;
@@ -208,9 +207,9 @@ void init_Scanner_Parser(){
 		alsTab[aliasPos].used = false;
 	}
 	int i = 0;
-	for(i; i < numPipes; ++i){
-		pipeFds[i] = NULL;
-	}
+	//for(i; i < numPipes; ++i){
+	//	pipeFd[i] = NULL;
+	//}
 
 	numPipes = 0; pipePos = 0; lastPipePos = 0;	pipePidPos = 0; hasErrors = false; errorCode = 0;
 
@@ -406,7 +405,59 @@ void execute_command(){
 void execute_pipe(){
 	//printf("inside execute pipe\n");
 
+	int p;
+	for(p=0; p < numPipes; ++p){
+		if(pipe(pipeFd[p]) == -1){
+			errorCode = 5;
+			hasErrors = true;
+			return;
+		}
+	}
+	for(p = 0; p <= numPipes; ++p) {
+		if(fork() == 0){
+			//printf("numtabCmds: %d\n", numTabCmds);
+			if(p == 0){
+				//first cmd;
+				//printf("First Command: %s\n", cmdTab[cmdTabPos - 1].name);
+				close(OUTPUT);
+				dup(pipeFd[p][OUTPUT]);
+			}else if(p == numTabCmds - numPipes - 1){
+				//last cmd
+				//printf("Last Command: %s\n", cmdTab[cmdTabPos - 1].name);
+				close(INPUT);
+				dup(pipeFd[p - 1][INPUT]);
+			}else{
+				//every other command
+				//printf("Command %d: %s\n", p, cmdTab[cmdTabPos - 1].name);
+				dup2(pipeFd[p-1][0], STDIN_FILENO);
+				dup2(pipeFd[p][1], STDOUT_FILENO);
+
+			}	
+			int pc;
+			for(pc = 0; pc < numPipes; ++pc){
+				close(pipeFd[pc][INPUT]);
+				close(pipeFd[pc][OUTPUT]);
+			}	
 	
+			execvp( cmdTab[cmdTabPos - 1].name, cmdTab[cmdTabPos - 1].args );
+			errorCode = 6;
+			hasErrors = true;
+			return;
+		}else {
+				cmdTabPos += 2;
+		}
+	}
+	// close pipes
+	int pc;
+	for(pc = 0; pc < numPipes; ++pc){
+		close(pipeFd[pc][INPUT]);
+		close(pipeFd[pc][OUTPUT]);
+	}	
+
+	// wait once per pipe
+	for(p = 0; p <= numPipes; ++p){
+		wait(0);
+	}
 }
 
 
@@ -443,7 +494,11 @@ void handle_errors(){
 			fprintf(stderr, "Error: The alias \"%s\" has a circular reference.\n", curCmd->name);
 			break;
 		case 5:
-			fprintf(stderr, "Unknown Error: %s\n", curCmd->name);
+			fprintf(stderr, "Pipe Error:");
+			break;
+		case 6:
+			fprintf(stderr, "execvp Error: Exiting Child Process");
+			exit(1);
 			break;
 
 

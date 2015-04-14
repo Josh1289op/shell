@@ -19,7 +19,7 @@
 
 #define MAXCMD 100
 #define MAXALIAS 100
-
+#define MAXREPARSE 1000
 
 #define INPUT 0
 #define OUTPUT 1
@@ -47,7 +47,7 @@ void reInitCurCmd();
 void execute_pipe();
 int aliasChecker();
 void printTable();
-
+void concatenate_string(char *original, char *add);
 
 
 //Initialization 
@@ -87,8 +87,8 @@ typedef struct _ALS {
 als alsTab[MAXALIAS];
 als* curAls;
 int numTabAls;
-
-
+int lastAliasUsed;
+char * reYYPARSEString;
 
 char cwd[1024];
 char ** environment;

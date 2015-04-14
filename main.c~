@@ -42,25 +42,38 @@ void main(int argc, char **argv, char** environ) {
 }
 
 int aliasChecker(){
-	
-
 	//printf("Number of Aliases: %d\n", numTabAls);
+	lastAliasUsed = -1;
 	int pos = 0; int argPos = 0; int aliasPos = 0;
 	for(pos; pos < numTabCmds; ++pos){
 		tempNumTabCmds = numTabCmds;
 		for(aliasPos = 0; aliasPos < numTabAls; ++aliasPos){
 			if(strcmp(alsTab[aliasPos].alsName,cmdTab[pos].name) == 0) {
 				swapping = true;
-				//printf("Found Alias: %s = %s \n", alsTab[aliasPos].alsName, alsTab[aliasPos].alsValue);
-				if(alsTab[aliasPos].used) {
+				if(alsTab[aliasPos].used && pos == lastAliasUsed ) {
 					errorCode = 4;
 					hasErrors = true;
+					swapping = false;
 					return ERROR;
+				}else {
+					int tempAliasPos = 0;
+					for(tempAliasPos; tempAliasPos < numTabAls; ++tempAliasPos){
+						alsTab[tempAliasPos].used = false;
+					}
 				}
-				
-				//printf("\nBefore - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
+				lastAliasUsed = pos;
 				//printTable();
-				my_string_buffer = yy_scan_string(alsTab[aliasPos].alsValue);
+				reYYPARSEString = alsTab[aliasPos].alsValue;
+				printf("%s", reYYPARSEString);
+				int argPosRecat;
+				for(argPosRecat = 1; argPosRecat < cmdTab[pos].numArgs; ++argPosRecat){
+					printf("%d", argPosRecat);
+					concatenate_string(reYYPARSEString, " ");
+					concatenate_string(reYYPARSEString, cmdTab[pos].args[argPosRecat]);
+				}
+				printf("%s", reYYPARSEString);
+
+				my_string_buffer = yy_scan_string(reYYPARSEString);
     				int my_parse_result  = yyparse();
     				yy_delete_buffer(my_string_buffer);
 				yylex_destroy();
@@ -71,19 +84,20 @@ int aliasChecker(){
 				for(i = 0; i < pos + 1; ++i){
 					tempCmdTab[i] = cmdTab[i];
 				}
-				//printTempTable(tempCmdTab);
+				printf("After - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
+				printTempTable(tempCmdTab);
 				int j = 0;
 				int tempAliasPos = pos;
 				//Move all the new cmds where they go in the table
 				for(j = numTabCmds; j < tempNumTabCmds; ++j){
 					tempCmdTab[tempAliasPos++] = cmdTab[j];
 				}
-				//printTempTable(tempCmdTab);
+				printTempTable(tempCmdTab);
 				//Move the rest of the cmds below the new cmds
 				for(i; i < numTabCmds; ++i){
 					tempCmdTab[tempAliasPos++] = cmdTab[i];
 				}
-				//printTempTable(tempCmdTab);
+				printTempTable(tempCmdTab);
 				//Copy the new table over to the old table
 				reInitCurCmd(false);
 				for(i = 0; i < tempNumTabCmds - 1; ++i){
@@ -419,7 +433,7 @@ void execute_pipe(){
 				printf("First Command: %s\n", cmdTab[cmdTabPos - 1].name);
 				close(OUTPUT);
 				dup(pipeFd[p][OUTPUT]);
-			}else if(p == numTabCmds - 2){
+			}else if(p == numTabCmds - numPipes - 1){
 				//last cmd
 				printf("Last Command: %s\n", cmdTab[cmdTabPos - 1].name);
 				close(INPUT);
@@ -544,5 +558,19 @@ void run_getenv (char * name)
     else {
         printf ("%s = %s\n", name, value);
     }
+}
+
+void concatenate_string(char *original, char *add)
+{
+   while(*original)
+      original++;
+ 
+   while(*add)
+   {
+      *original = *add;
+      add++;
+      original++;
+   }
+   *original = '\0';
 }
 

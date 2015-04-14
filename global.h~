@@ -21,8 +21,8 @@
 #define MAXALIAS 100
 
 
-#define READ 0
-#define WRITE 1
+#define INPUT 0
+#define OUTPUT 1
 
 typedef int YY_BUFFER_STATE;
 YY_BUFFER_STATE my_string_buffer;
@@ -97,10 +97,11 @@ const char* path;
 const char* home;
 pid_t pids;
 
-int pid;
+int pid[100];
+int pipePidPos;
 int pipeStatus;
 
-int* pipeFds[49];
+int pipeFd[49];
 int numPipes;
 int pipePos;
 int lastPipePos;
@@ -108,6 +109,6 @@ int lastPipePos;
 
 // Error Handling Variables
 int errorCode;
-int hasError;
+int hasErrors;
 
 

@@ -332,6 +332,7 @@ void setBuiltins(){
 			|| strcmp(temp->name,">") == 0
 			|| strcmp(temp->name,">>") == 0
 			|| strcmp(temp->name,"2>") == 0
+			|| strcmp(temp->name,"2>&1") == 0
 			|| strcmp(temp->name,"exit") == 0) 
 		{
 			temp->isBuiltin = true;
@@ -353,6 +354,8 @@ int ioRedir(){
 		} else if (strcmp(temp->name,">>") == 0) {
 			io[2] = true; ioFd[2] = temp->outFd;
 		} else if (strcmp(temp->name,"2>") == 0) {
+			io[3] = true; ioFd[3] = temp->errFd;
+		} else if (strcmp(temp->name,"2>&1") == 0) {
 			io[3] = true; ioFd[3] = temp->errFd;
 		}
 	}
@@ -456,7 +459,9 @@ int do_it() {
 	      	//io
 	    } else if(strcmp(curCmd->name, "2>") == 0){
 	      	//io
-	    }else if(strcmp(curCmd->name, "alias") == 0){
+	    } else if(strcmp(curCmd->name,"2>&1") == 0){
+	      	//io
+	    } else if(strcmp(curCmd->name, "alias") == 0){
 		
 		if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
 			errorCode = 1;
@@ -482,7 +487,6 @@ int do_it() {
 }
 
 void execute_command(){
-	//CHECK SLIDES FOR MORE CODE EXAMPLES ON THIS METHOD/////////////////////////////
 
 	// Handle  command execution, pipelining, i/o redirection, and background processing.
 	// Utilize a command table whose components are plugged in during parsing by yacc.
@@ -491,19 +495,29 @@ void execute_command(){
 	switch(pids = fork()) {
 		case 0:
 			if(io[0]) dup2(curCmd->inFd, STDIN_FILENO);
-    		if(io[1] || io[2]) {
-    			if(io[1]) curCmd->outFd = ioFd[1];
-    			if(io[2]) curCmd->outFd = ioFd[2];
-    			
-    			dup2(curCmd->outFd, STDOUT_FILENO);
-    		}
-    		if(io[3]) {
-    			curCmd->errFd = ioFd[3];
-    			dup2(curCmd->errFd, STDERR_FILENO);
-    		}
-    		if(io[0]) close(curCmd->inFd);
-    		if(io[1] || io[2]) close(curCmd->outFd);
-    		if(io[3]) close(curCmd->errFd);
+    			if(io[1] || io[2]) {
+	    			if(io[1]) curCmd->outFd = ioFd[1];
+	    			if(io[2]) curCmd->outFd = ioFd[2];
+	    			
+	    			dup2(curCmd->outFd, STDOUT_FILENO);
+    			}
+	    		if(io[3]) {
+	    			curCmd->errFd = ioFd[3];
+				if(curCmd->errFd == -2){
+					dup2(1, 2);
+				} else {
+	    				dup2(curCmd->errFd, STDERR_FILENO);
+				}
+	    		}
+	    		if(io[0]) close(curCmd->inFd);
+	    		if(io[1] || io[2]) close(curCmd->outFd);
+	    		if(io[3]) {
+				if(curCmd->errFd == -2){
+					close(1);
+				} else {
+	    				close(curCmd->errFd);
+				}
+			}
 
 			status = execvp(curCmd->name, curCmd->args);
 			if(status){
@@ -552,12 +566,7 @@ void execute_pipe(){
 	    			
 	    			dup2(curCmd->outFd, STDOUT_FILENO);
 	    		}
-	    		if(io[1] || io[2]) close(curCmd->outFd);
-	    		if(io[3]) {
-	    			curCmd->errFd = ioFd[3];
-	    			dup2(curCmd->errFd, STDERR_FILENO);
-	    		}
-	    		if(io[3]) close(curCmd->errFd);
+	    			if(io[1] || io[2]) close(curCmd->outFd);
 
 				close(INPUT);
 				dup(pipeFd[p - 1][INPUT]);
@@ -573,6 +582,12 @@ void execute_pipe(){
 				close(pipeFd[pc][INPUT]);
 				close(pipeFd[pc][OUTPUT]);
 			}	
+			
+			if(io[3]) {
+	    			curCmd->errFd = ioFd[3];
+	    			dup2(curCmd->errFd, STDERR_FILENO);
+    			}
+    			if(io[3]) close(curCmd->errFd);
 	
 			execvp( cmdTab[cmdTabPos - 1].name, cmdTab[cmdTabPos - 1].args );
 			errorCode = 6;

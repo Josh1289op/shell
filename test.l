@@ -14,10 +14,11 @@ int line_num = 1;
 "\}" {yylval = strdup(yytext); return CVAR; }
 
 "|" 	return PIPE;
-">" 	return GT;
-">>" 	return DGT;
-"<" 	return LT;
 "2>" 	return ERROR_CMD;
+"2>&1"  return STDOUT_ERROR;
+">>" 	return DGT;
+">" 	return GT;
+"<" 	return LT;
 
 bye|cd|exit|alias|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); return COMMAND; }
 

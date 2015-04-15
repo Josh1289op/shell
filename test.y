@@ -74,7 +74,6 @@ command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab
 			YYACCEPT;
 			};
       | OVAR VALUE CVAR { printf("Found Variable here: %s = %s\n", $2, getenv ($2));
-			init(environment); 
 			YY_BUFFER_STATE my_string_buffer = yy_scan_string(getenv($2));
 			int my_parse_result  = yyparse();
 			yy_delete_buffer(my_string_buffer);

@@ -18,7 +18,8 @@ int yywrap()
 %}
 
 %token PIPE LEFT_OPEN RIGHT_OPEN DUB_LEFT_OPEN ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL 
-
+%nonassoc ELSE
+%expect 1
 %%
 
 start: command EOL  { return 0; };

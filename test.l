@@ -21,7 +21,16 @@ int line_num = 1;
 
 bye|cd|exit|alias|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); return COMMAND; }
 
-
+\~.* { 	yylval = strdup(yytext);	
+	++yylval;
+	char * fucker;
+	fucker = getenv("HOME");
+	char * lmao;
+	strcpy(lmao, fucker);	
+	concatenate_string(lmao, yylval);
+	yylval = calloc(strlen(yytext)-1, sizeof(char));
+	yylval = lmao;
+	return VALUE; }
 
 [-A-Za-z0-9\/\.\:\~]+ { yylval = strdup(yytext); return VALUE; }
 

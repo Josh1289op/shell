@@ -79,7 +79,7 @@ int cmdFromFile(char* inputFileName) {
 }
 
 int aliasChecker(){
-	//printf("Number of Aliases: %d\n", numTabAls);
+	printf("Number of Aliases: %d\n", numTabAls);
 	lastAliasUsed = -1;
 	int pos = 0; int argPos = 0; int aliasPos = 0;
 	for(pos; pos < numTabCmds; ++pos){

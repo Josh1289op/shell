@@ -19,12 +19,12 @@ void runShell() {
 	do {
 		if(runPrompt) prompt();
 		int CMD = getCommand();
-		printf("----------\n");
-		printTable();
+		if(runPrompt)printf("----------\n");
+		if(runPrompt)printTable();
 		CMD = aliasChecker();
-		printf("----------\n");
-		printTable();
-		printf("----------\n");
+		if(runPrompt)printf("----------\n");
+		if(runPrompt)printTable();
+		if(runPrompt)printf("----------\n");
 		switch(CMD){
 			case BYE:
 				printf("CMD case: BYE\n");
@@ -67,6 +67,7 @@ int cmdFromFile(char* inputFileName) {
 
 	runPrompt = false;
     while (fgets (parseInput, 1024, fin)) {
+    	printf("\n%s", parseInput);
         my_string_buffer = yy_scan_string(parseInput);
 		runShell();
 		yy_delete_buffer(my_string_buffer);

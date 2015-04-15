@@ -6,11 +6,18 @@ extern int yydebug;
 void main(int argc, char **argv, char** environ) {
 
   	init(environ);
-	while(1){
-		if(cmdFromFile(argv[1])){
-			printf("argv[1]: %s\n", argv[1]);
-		}
-		prompt();
+
+  	//is the input from a file?
+  	cmdFromFile(argv[1]);
+
+
+	runShell();
+}
+
+void runShell() {
+
+	do {
+		if(runPrompt) prompt();
 		int CMD = getCommand();
 		printf("----------\n");
 		printTable();
@@ -41,23 +48,32 @@ void main(int argc, char **argv, char** environ) {
 				break;
 		}
 		reInitCurCmd(false);
-	}
+	} while(runPrompt);
 }
 
 int cmdFromFile(char* inputFileName) {
 	if(inputFileName == NULL) return false;
-	FILE *ifp;
+	FILE *fin;
 	char *mode = "r";
 
-	ifp = fopen(inputFileName, mode);
+	fin = fopen(inputFileName, mode);
 	
-	if (ifp == NULL) {
+	if (fin == NULL) {
 		errorCode = 8;
 		hasErrors = true;
 		handle_errors();
  	 	return false;
 	}
 
+	runPrompt = false;
+    while (fgets (parseInput, 1024, fin)) {
+        my_string_buffer = yy_scan_string(parseInput);
+		runShell();
+		yy_delete_buffer(my_string_buffer);
+		yylex_destroy();
+    }
+    fclose (fin);
+    runPrompt = true;
 	return true;
 }
 
@@ -194,6 +210,7 @@ void init(char ** envp){
 	insertCmd.wait = true;
   	cmdTab[0] = insertCmd;
 	
+	runPrompt = true;
 	numTabAls = 0;
 	curAls = &alsTab[0];
 
@@ -541,9 +558,8 @@ void handle_errors(){
 			fprintf(stderr, "%sError: %sUnknown command %s\n%s", IRed, IRedU, curCmd->name,IOReset);
 			exit(0);			
 			break;
-
 		case 8:
-			fprintf(stderr, "Error: input file not found.\n");
+			fprintf(stderr, "%sError: %sInput file not found. \n%s", IRed, IRedU, IOReset);
 			break;
 
 	}

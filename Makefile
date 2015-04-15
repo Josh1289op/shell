@@ -56,4 +56,4 @@ runFF: test.l test.y
 	flex test.l
 	bison -d test.y
 	gcc lex.yy.c test.tab.c main.c -o asShell -g
-	./asShell testCases.txt	
+	./asShell testCases	

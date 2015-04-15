@@ -20,9 +20,9 @@ bye|cd|exit|alias|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); 
 
 "\$\{".*"\}" {yylval = strdup(yytext); return COMMAND; }
 
-[A-Za-z0-9\/\.]+ { yylval = strdup(yytext); return VALUE; }
+[-A-Za-z0-9\/\.]+ { yylval = strdup(yytext); return VALUE; }
 
-\".*\"    { //grab the info between the quotes and return as a value
+\"[^\"]*\"    { //grab the info between the quotes and return as a value
 			yylval = strdup(yytext); 
 			yylval = calloc(strlen(yytext)-1, sizeof(char));
 			strncpy(yylval, &yytext[1], strlen(yytext-2));

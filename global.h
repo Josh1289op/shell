@@ -9,7 +9,9 @@
 #define KNRM  "\x1B[0m"
 #define KGRY  "\x1B[37m"
 #define KCYN  "\x1B[36m"
-
+#define IRed  "\x1B[1;31m"
+#define IRedU "\x1B[37m"
+#define IOReset "\x1B[0m"
 
 #define OK 0
 #define BYE 1

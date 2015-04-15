@@ -67,7 +67,7 @@ int cmdFromFile(char* inputFileName) {
 
 	runPrompt = false;
     while (fgets (parseInput, 1024, fin)) {
-    	printf("\n%s", parseInput);
+    	printf("\n%sasShell:%s%s%s", KCYN, KGRY, parseInput, KNRM);
         YY_BUFFER_STATE my_string_buffer = yy_scan_string(parseInput);
 		runShell();
 		yy_delete_buffer(my_string_buffer);

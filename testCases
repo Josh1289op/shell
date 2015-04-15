@@ -22,13 +22,15 @@ lo
 setenv this .
 setenv lsthis "jj ${this}"
 ${lsthis}
-wc -l < shell.c
-wc -l < shell.h
+ls
+cd Desktop/osProject/shell
+wc -l < main.c
+wc -l < global.h
 ls >> file_out
 ls
 cd
 ls
-cd share
+cd Desktop/osProject/shell/temp
 ls
 cd ~
 ls

@@ -73,7 +73,7 @@ int aliasChecker(){
 				}
 				printf("%s", reYYPARSEString);
 
-				my_string_buffer = yy_scan_string(reYYPARSEString);
+				YY_BUFFER_STATE my_string_buffer = yy_scan_string(reYYPARSEString);
     				int my_parse_result  = yyparse();
     				yy_delete_buffer(my_string_buffer);
 				yylex_destroy();
@@ -163,7 +163,6 @@ void init(char ** envp){
     	char* thisEnv = *env;
     	++environmentcount;
   	}
-  	printf("%d\n", environmentcount);
 
 	numTabCmds = 0;
 	cmdTabPos = 0;
@@ -198,11 +197,14 @@ void prompt(){
 int getCommand(){
 	init_Scanner_Parser();
 	if (yyparse()){
+		printf(" ERRORS GETCOMMD()");
 		return understand_errors();
 	} else if (strcmp(curCmd->name,"bye") == 0) {
 		//printf("bye returned in getCommand\n");
+		printf(" BYE GETCOMMD()");
 		return BYE;
 	} else {
+		printf(" BUILTINS GETCOMMD()");
 		setBuiltins();
 		return OK;
 	}
@@ -458,7 +460,7 @@ void execute_pipe(){
 			execvp( cmdTab[cmdTabPos - 1].name, cmdTab[cmdTabPos - 1].args );
 			errorCode = 6;
 			hasErrors = true;
-			curCmd = &cmdTab[cmdTabPos - 1]
+			curCmd = &cmdTab[cmdTabPos - 1];
 			return;
 		}else {
 				cmdTabPos += 2;

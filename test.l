@@ -10,6 +10,8 @@ int line_num = 1;
 %}
 /* ADDED THESE FOR I/O REDIRECTION*/
 %%
+"\$\{" {yylval = strdup(yytext); return OVAR; }
+"\}" {yylval = strdup(yytext); return CVAR; }
 
 "|" 	return PIPE;
 ">" 	return LEFT_OPEN;
@@ -18,9 +20,9 @@ int line_num = 1;
 
 bye|cd|exit|alias|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); return COMMAND; }
 
-"\$\{".*"\}" {yylval = strdup(yytext); return COMMAND; }
 
-[-A-Za-z0-9\/\.]+ { yylval = strdup(yytext); return VALUE; }
+
+[-A-Za-z0-9\/\.\:\~]+ { yylval = strdup(yytext); return VALUE; }
 
 \"[^\"]*\"    { //grab the info between the quotes and return as a value
 			yylval = strdup(yytext); 

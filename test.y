@@ -17,7 +17,7 @@ int yywrap()
 
 %}
 
-%token PIPE LEFT_OPEN RIGHT_OPEN ERROR_CMD COMMAND VALUE OPTION EOL 
+%token PIPE LEFT_OPEN RIGHT_OPEN ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL 
 
 %%
 
@@ -61,7 +61,40 @@ command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab
 			} 
  		}
       | OPTION axis { insertCmd.name = $1; return 1; }
-      | OPTION      { insertCmd.name = $1; return 1; };
+      | OPTION      { insertCmd.name = $1; return 1; }
+      | VALUE OVAR VALUE CVAR { printf("Found Variable: %s = %s\n", $3, getenv ($3)); 
+			reYYPARSEString = $1;
+			concatenate_string(reYYPARSEString, " ");
+			concatenate_string(reYYPARSEString, getenv($3));
+			YY_BUFFER_STATE my_string_buffer = yy_scan_string(reYYPARSEString);
+			int my_parse_result  = yyparse();
+			yy_delete_buffer(my_string_buffer);
+			yylex_destroy();
+			YYACCEPT;
+			};
+      | OVAR VALUE CVAR { printf("Found Variable here: %s = %s\n", $2, getenv ($2));
+			init(environment); 
+			YY_BUFFER_STATE my_string_buffer = yy_scan_string(getenv($2));
+			int my_parse_result  = yyparse();
+			yy_delete_buffer(my_string_buffer);
+			yylex_destroy();
+			YYACCEPT;
+			}
+      | COMMAND VALUE OVAR VALUE CVAR { 
+			reYYPARSEString = $1;
+			concatenate_string(reYYPARSEString, " ");
+			concatenate_string(reYYPARSEString, $2);
+			concatenate_string(reYYPARSEString, " \"");
+			concatenate_string(reYYPARSEString, $3);
+			concatenate_string(reYYPARSEString, $4);
+			concatenate_string(reYYPARSEString, $5);
+			concatenate_string(reYYPARSEString, "\"");
+			my_string_buffer = yy_scan_string(reYYPARSEString);
+			int my_parse_result  = yyparse();
+			yy_delete_buffer(my_string_buffer);
+			yylex_destroy();
+			YYACCEPT;
+			};
 
 axis: inter | axis inter ;
 

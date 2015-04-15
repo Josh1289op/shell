@@ -41,7 +41,7 @@ void runShell() {
 					if(hasErrors) {					
 						handle_errors();
 					}
-					reInitCurCmd(false);
+					//reInitCurCmd(false);
 					curCmd = &cmdTab[cmdTabPos];
 				}
 				
@@ -217,6 +217,8 @@ void init(char ** envp){
 	swapping = false;
 	hasErrors = false;
 	errorCode = 0;
+
+	numIO = 0;
 	// init all variables.
 	// define (allocate storage) for some var/tables
 	// init all tables (e.g., alias table)
@@ -263,7 +265,15 @@ void init_Scanner_Parser(){
 	//}
 
 	numPipes = 0; pipePos = 0; lastPipePos = 0;	pipePidPos = 0; hasErrors = false; errorCode = 0;
-
+	io[0] = false;
+	io[1] = false;
+	io[2] = false;
+	io[3] = false;
+	ioFd[0] = -1;
+	ioFd[1] = -1;
+	ioFd[2] = -1;
+	ioFd[3] = -1;
+	numIO = 0;
 }
 
 //call this everytime you finish with the command you are currently working on
@@ -291,6 +301,18 @@ void reInitCurCmd(int fromYacc) {
 	insertCmd.isBuiltin = false;
 	insertCmd.wait = true;
 	insertCmd.isCommandValue = false;
+	insertCmd.inFd = -1;
+	insertCmd.outFd = -1;
+	insertCmd.errFd = -1;
+
+	io[0] = false;
+	io[1] = false;
+	io[2] = false;
+	io[3] = false;
+	ioFd[0] = -1;
+	ioFd[1] = -1;
+	ioFd[2] = -1;
+	ioFd[3] = -1;
 }
 
 void setBuiltins(){
@@ -306,6 +328,10 @@ void setBuiltins(){
 			|| strcmp(temp->name,"setenv") == 0
 			|| strcmp(temp->name,"unsetenv") == 0
 			|| strcmp(temp->name,"|") == 0
+			|| strcmp(temp->name,"<") == 0
+			|| strcmp(temp->name,">") == 0
+			|| strcmp(temp->name,">>") == 0
+			|| strcmp(temp->name,"2>") == 0
 			|| strcmp(temp->name,"exit") == 0) 
 		{
 			temp->isBuiltin = true;
@@ -313,6 +339,24 @@ void setBuiltins(){
 		}
 		//else printf("isBuiltin = false\n");
 	}
+}
+
+int ioRedir(){
+	int counter = 0;
+	while(counter < numTabCmds){
+		cmd *temp = &cmdTab[counter++];
+		if(strcmp(temp->name,"<") == 0){
+			cmdTab[0].inFd = temp->inFd;
+			io[0] = true; ioFd[0] = temp->inFd;
+		} else if (strcmp(temp->name,">") == 0){
+			io[1] = true; ioFd[1] = temp->outFd;
+		} else if (strcmp(temp->name,">>") == 0) {
+			io[2] = true; ioFd[2] = temp->outFd;
+		} else if (strcmp(temp->name,"2>") == 0) {
+			io[3] = true; ioFd[3] = temp->errFd;
+		}
+	}
+	return false;
 }
 
 void processCommand(){
@@ -323,6 +367,7 @@ void processCommand(){
 	} else if(strcmp(curCmd->name,"empty")) { //if the input is not empty, then execute the command
 		shouldWait();
 		//printf("numPipes: %d\n", numPipes);
+		ioRedir();
 		if(numPipes > 0){
 			execute_pipe();		//execute commands that have pipes
 		} else {
@@ -403,7 +448,15 @@ int do_it() {
 	    } else if(strcmp(curCmd->name, "|") == 0){
 	      	//pipes
 	      	//printf("do_pipe: %s\n", curCmd->name);
-	    } else if(strcmp(curCmd->name, "alias") == 0){
+	    } else if(strcmp(curCmd->name, "<") == 0){
+	      	//io
+	    } else if(strcmp(curCmd->name, ">") == 0){
+	      	//io
+	    } else if(strcmp(curCmd->name, ">>") == 0){
+	      	//io
+	    } else if(strcmp(curCmd->name, "2>") == 0){
+	      	//io
+	    }else if(strcmp(curCmd->name, "alias") == 0){
 		
 		if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
 			errorCode = 1;
@@ -437,7 +490,21 @@ void execute_command(){
 	int status;
 	switch(pids = fork()) {
 		case 0:
-			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
+			if(io[0]) dup2(curCmd->inFd, STDIN_FILENO);
+    		if(io[1] || io[2]) {
+    			if(io[1]) curCmd->outFd = ioFd[1];
+    			if(io[2]) curCmd->outFd = ioFd[2];
+    			
+    			dup2(curCmd->outFd, STDOUT_FILENO);
+    		}
+    		if(io[3]) {
+    			curCmd->errFd = ioFd[3];
+    			dup2(curCmd->errFd, STDERR_FILENO);
+    		}
+    		if(io[0]) close(curCmd->inFd);
+    		if(io[1] || io[2]) close(curCmd->outFd);
+    		if(io[3]) close(curCmd->errFd);
+
 			status = execvp(curCmd->name, curCmd->args);
 			if(status){
 				errorCode = 7;
@@ -470,13 +537,28 @@ void execute_pipe(){
 		if(fork() == 0){
 			//printf("numtabCmds: %d\n", numTabCmds);
 			if(p == 0){
+				if(io[0]) dup2(curCmd->inFd, STDIN_FILENO);
+				if(io[0]) close(curCmd->inFd);
 				//first cmd;
 				//printf("First Command: %s\n", cmdTab[cmdTabPos - 1].name);
 				close(OUTPUT);
 				dup(pipeFd[p][OUTPUT]);
-			}else if(p == numTabCmds - numPipes - 1){
+			}else if(p == numTabCmds - numPipes - 2*numIO - 1){
 				//last cmd
 				//printf("Last Command: %s\n", cmdTab[cmdTabPos - 1].name);
+				if(io[1] || io[2]) {
+	    			if(io[1]) curCmd->outFd = ioFd[1];
+	    			if(io[2]) curCmd->outFd = ioFd[2];
+	    			
+	    			dup2(curCmd->outFd, STDOUT_FILENO);
+	    		}
+	    		if(io[1] || io[2]) close(curCmd->outFd);
+	    		if(io[3]) {
+	    			curCmd->errFd = ioFd[3];
+	    			dup2(curCmd->errFd, STDERR_FILENO);
+	    		}
+	    		if(io[3]) close(curCmd->errFd);
+
 				close(INPUT);
 				dup(pipeFd[p - 1][INPUT]);
 			}else{

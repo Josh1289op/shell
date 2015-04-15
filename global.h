@@ -52,6 +52,7 @@ void printTable();
 void concatenate_string(char *original, char *add);
 int cmdFromFile(char*);
 void runShell();
+int ioRedir();
 
 char parseInput[1024];
 int runPrompt;
@@ -77,6 +78,8 @@ cmd* curCmd;
 int numTabCmds;
 int cmdTabPos;
 
+int io[4]; int ioFd[4]; 
+int numIO;
 //Using these variables to keep track of cmdTab organization for swamping aliases
 int swapping;
 int tempNumTabCmds;

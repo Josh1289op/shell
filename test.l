@@ -14,9 +14,9 @@ int line_num = 1;
 "\}" {yylval = strdup(yytext); return CVAR; }
 
 "|" 	return PIPE;
-">" 	return LEFT_OPEN;
-">>" 	return DUB_LEFT_OPEN;
-"<" 	return RIGHT_OPEN;
+">" 	return GT;
+">>" 	return DGT;
+"<" 	return LT;
 "2>" 	return ERROR_CMD;
 
 bye|cd|exit|alias|setenv|unsetenv|getenv|printenv    { yylval = strdup(yytext); return COMMAND; }

@@ -15,6 +15,7 @@ int line_num = 1;
 
 "|" 	return PIPE;
 ">" 	return LEFT_OPEN;
+">>" 	return DUB_LEFT_OPEN;
 "<" 	return RIGHT_OPEN;
 "2>" 	return ERROR_CMD;
 

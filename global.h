@@ -50,7 +50,11 @@ void execute_pipe();
 int aliasChecker();
 void printTable();
 void concatenate_string(char *original, char *add);
+int cmdFromFile(char*);
+void runShell();
 
+char parseInput[1024];
+int runPrompt;
 
 //Initialization 
 typedef struct _CMD {

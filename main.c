@@ -5,16 +5,26 @@ extern int yydebug;
 
 void main(int argc, char **argv, char** environ) {
 
-  init(environ);
-	while(1){
-		prompt();
+  	init(environ);
+
+  	//is the input from a file?
+  	cmdFromFile(argv[1]);
+
+
+	runShell();
+}
+
+void runShell() {
+
+	do {
+		if(runPrompt) prompt();
 		int CMD = getCommand();
-		printf("----------\n");
-		printTable();
+		if(runPrompt)printf("----------\n");
+		if(runPrompt)printTable();
 		CMD = aliasChecker();
-		printf("----------\n");
-		printTable();
-		printf("----------\n");
+		if(runPrompt)printf("----------\n");
+		if(runPrompt)printTable();
+		if(runPrompt)printf("----------\n");
 		switch(CMD){
 			case BYE:
 				printf("CMD case: BYE\n");
@@ -38,7 +48,34 @@ void main(int argc, char **argv, char** environ) {
 				break;
 		}
 		reInitCurCmd(false);
+	} while(runPrompt);
+}
+
+int cmdFromFile(char* inputFileName) {
+	if(inputFileName == NULL) return false;
+	FILE *fin;
+	char *mode = "r";
+
+	fin = fopen(inputFileName, mode);
+	
+	if (fin == NULL) {
+		errorCode = 8;
+		hasErrors = true;
+		handle_errors();
+ 	 	return false;
 	}
+
+	runPrompt = false;
+    while (fgets (parseInput, 1024, fin)) {
+    	printf("\n%s", parseInput);
+        YY_BUFFER_STATE my_string_buffer = yy_scan_string(parseInput);
+		runShell();
+		yy_delete_buffer(my_string_buffer);
+		yylex_destroy();
+    }
+    fclose (fin);
+    runPrompt = true;
+	return true;
 }
 
 int aliasChecker(){
@@ -173,6 +210,7 @@ void init(char ** envp){
 	insertCmd.wait = true;
   	cmdTab[0] = insertCmd;
 	
+	runPrompt = true;
 	numTabAls = 0;
 	curAls = &alsTab[0];
 
@@ -197,14 +235,11 @@ void prompt(){
 int getCommand(){
 	init_Scanner_Parser();
 	if (yyparse()){
-		printf(" ERRORS GETCOMMD()");
 		return understand_errors();
 	} else if (strcmp(curCmd->name,"bye") == 0) {
 		//printf("bye returned in getCommand\n");
-		printf(" BYE GETCOMMD()");
 		return BYE;
 	} else {
-		printf(" BUILTINS GETCOMMD()");
 		setBuiltins();
 		return OK;
 	}
@@ -483,7 +518,7 @@ void execute_pipe(){
 
 int understand_errors(){
 	//printf("understand_errors()\n");
-	printf("command recieved: \"%s\"\n", insertCmd.name);
+	printf("YYParse failed: command recieved: \"%s\"\n", insertCmd.name);
 	return ERROR;
 }
 
@@ -523,7 +558,9 @@ void handle_errors(){
 			fprintf(stderr, "%sError: %sUnknown command %s\n%s", IRed, IRedU, curCmd->name,IOReset);
 			exit(0);			
 			break;
-
+		case 8:
+			fprintf(stderr, "%sError: %sInput file not found. \n%s", IRed, IRedU, IOReset);
+			break;
 
 	}
 

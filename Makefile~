@@ -4,7 +4,7 @@ hello:   test.l test.y
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
 	flex test.l
 	bison -d test.y
-	gcc lex.yy.c test.tab.c main.c -o asShell
+	gcc lex.yy.c test.tab.c main.c -o asShell -g
 
 clean:
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
@@ -31,15 +31,29 @@ start: test.l test.y
 	./asShell
 	
 run: test.l test.y
+	@-rm -f *o asShell test.tab.h test.tab.c lex.yy.c
+	@-flex test.l
+	@-bison -d test.y
+	@-gcc lex.yy.c test.tab.c main.c -o asShell -g
+	@./asShell
+	
+debug: test.l test.y
 	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
 	flex test.l
-	bison -d test.y
-	gcc lex.yy.c test.tab.c main.c -o asShell
+	bison -dv test.y
+	gcc lex.yy.c test.tab.c main.c -o asShell -s
 	./asShell
 	
-debugMem: test.l test.y
-	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
-	flex test.l
-	bison -d test.y
-	gcc lex.yy.c test.tab.c main.c -o asShell -s
-	valgrind ./asShell
+runFNF: test.l test.y
+	@-rm -f *o asShell test.tab.h test.tab.c lex.yy.c
+	@-flex test.l
+	@-bison -d test.y
+	@-gcc lex.yy.c test.tab.c main.c -o asShell -g
+	@-./asShell hey.txt
+	
+runFF: test.l test.y
+	@-rm -f *o asShell test.tab.h test.tab.c lex.yy.c
+	@-flex test.l
+	@-bison -d test.y
+	@-gcc lex.yy.c test.tab.c main.c -o asShell -g
+	@-./asShell testCases	

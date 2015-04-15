@@ -17,14 +17,14 @@ int yywrap()
 
 %}
 
-%token PIPE LEFT_OPEN RIGHT_OPEN ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL 
+%token PIPE LEFT_OPEN RIGHT_OPEN DUB_LEFT_OPEN ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL 
 
 %%
 
 start: command EOL  { return 0; };
 
 command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab[numTabCmds++] = insertCmd;}
-      | command pipe command 
+      	    | command io command
 	    |	COMMAND  axis { //printf("Command axis %s\n", $1); 
 	  					insertCmd.name = $1; 
 	  					insertCmd.args[0] = insertCmd.name;
@@ -66,7 +66,7 @@ command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab
 			reYYPARSEString = $1;
 			concatenate_string(reYYPARSEString, " ");
 			concatenate_string(reYYPARSEString, getenv($3));
-			my_string_buffer = yy_scan_string(reYYPARSEString);
+			YY_BUFFER_STATE my_string_buffer = yy_scan_string(reYYPARSEString);
 			int my_parse_result  = yyparse();
 			yy_delete_buffer(my_string_buffer);
 			yylex_destroy();
@@ -74,7 +74,7 @@ command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab
 			};
       | OVAR VALUE CVAR { printf("Found Variable here: %s = %s\n", $2, getenv ($2));
 			init(environment); 
-			my_string_buffer = yy_scan_string(getenv($2));
+			YY_BUFFER_STATE my_string_buffer = yy_scan_string(getenv($2));
 			int my_parse_result  = yyparse();
 			yy_delete_buffer(my_string_buffer);
 			yylex_destroy();
@@ -106,7 +106,7 @@ inter: VALUE  { insertCmd.isCommandValue = true;
        			  //printf("Inter option %s\n", insertCmd.args[insertCmd.numArgs]);
        			};
 
-pipe: PIPE { //printf("PIPE |\n"); 
+io: PIPE { //printf("PIPE |\n"); 
               ++numPipes;
               reInitCurCmd(true);
               insertCmd.name = "|"; 

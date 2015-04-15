@@ -17,14 +17,15 @@ int yywrap()
 
 %}
 
-%token PIPE LEFT_OPEN RIGHT_OPEN ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL 
-
+%token PIPE LEFT_OPEN RIGHT_OPEN DUB_LEFT_OPEN ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL 
+%nonassoc ELSE
+%expect 1
 %%
 
 start: command EOL  { return 0; };
 
 command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab[numTabCmds++] = insertCmd;}
-      | command pipe command 
+      	    | command io command
 	    |	COMMAND  axis { //printf("Command axis %s\n", $1); 
 	  					insertCmd.name = $1; 
 	  					insertCmd.args[0] = insertCmd.name;
@@ -106,7 +107,7 @@ inter: VALUE  { insertCmd.isCommandValue = true;
        			  //printf("Inter option %s\n", insertCmd.args[insertCmd.numArgs]);
        			};
 
-pipe: PIPE { //printf("PIPE |\n"); 
+io: PIPE { //printf("PIPE |\n"); 
               ++numPipes;
               reInitCurCmd(true);
               insertCmd.name = "|"; 

@@ -403,8 +403,10 @@ void execute_command(){
 			//execlp("ls", "ls",(char *) NULL );   execlp("ls", "ls", "-l", (char *) NULL );
 			status = execvp(curCmd->name, curCmd->args);
 			if(status){
-				printf("%s: command not recognized.\n", curCmd->name);
-				exit(0);
+				errorCode = 7;
+				hasErrors = true;
+				return;
+
 			}
 			break;
 
@@ -456,6 +458,7 @@ void execute_pipe(){
 			execvp( cmdTab[cmdTabPos - 1].name, cmdTab[cmdTabPos - 1].args );
 			errorCode = 6;
 			hasErrors = true;
+			curCmd = &cmdTab[cmdTabPos - 1];
 			return;
 		}else {
 				cmdTabPos += 2;
@@ -483,7 +486,6 @@ int understand_errors(){
 }
 
 void handle_errors(){
-	printf("handle_errors()\n");
 
 	// Find out if error occurs in middle of command
 	// That is, the command still has a “tail”
@@ -493,26 +495,31 @@ void handle_errors(){
 
 	switch(errorCode){
 		case 0:
-			fprintf(stderr, "Unknown Error: %s\n", curCmd->name);
+			fprintf(stderr, "%sError: %sUnknown command %s\n%s", IRed, IRedU, curCmd->name,IOReset);
 			break;
 		case 1:
-			fprintf(stderr, "Error: The \"%s\" command takes two arguments \nInput: %s %s %s \n", curCmd->name, curCmd->name, curCmd->args[1], curCmd->args[2]);
+			fprintf(stderr, "%sError: %sThe \"%s\" command takes two arguments \n%s%sInput:%s %s %s %s\n%s", IRed, IRedU,  curCmd->name, IOReset, IRed, IRedU, curCmd->name, curCmd->args[1], curCmd->args[2], IOReset);
 			break;
 		case 2:
-			fprintf(stderr, "Error: The \"%s\" command takes one argument \nInput: %s %s \n", curCmd->name,curCmd->name, curCmd->args[1]);
+			fprintf(stderr, "%sError: %sThe \"%s\" command takes one argument \n%sInput:%s %s %s\n%s", IRed, IRedU, curCmd->name, IRed, IRedU, curCmd->name, curCmd->args[1], IOReset);
 			break;
 		case 3:
-			fprintf(stderr, "Error: The \"%s\" command takes arguments and you supplied none. \nInput: %s \n", curCmd->name, curCmd->name);
+			fprintf(stderr, "%sError: %sThe \"%s\" command takes arguments and you supplied none. \nInput: %s \n%s", IRed, IRedU,curCmd->name, curCmd->name, IOReset);
 			break;
 		case 4:
-			fprintf(stderr, "Error: The alias \"%s\" has a circular reference.\n", curCmd->name);
+			fprintf(stderr, "%sError: %sThe alias \"%s\" has a circular reference.\n%s", IRed, IRedU, curCmd->name, IOReset);
 			break;
 		case 5:
-			fprintf(stderr, "Pipe Error:");
+			fprintf(stderr, "%sPipe Error:\n%s",IRed,IOReset);
 			break;
 		case 6:
-			fprintf(stderr, "execvp Error: Exiting Child Process");
+			fprintf(stderr, "%sError: %sUnknown command %s%s\n", IRed, IRedU, curCmd->name, IOReset);
 			exit(1);
+			break;
+		case 7:
+			//EXECVP EXIT ERROR;
+			fprintf(stderr, "%sError: %sUnknown command %s\n%s", IRed, IRedU, curCmd->name,IOReset);
+			exit(0);			
 			break;
 
 

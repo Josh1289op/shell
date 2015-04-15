@@ -17,9 +17,9 @@ int yywrap()
 
 %}
 
-%token PIPE LEFT_OPEN RIGHT_OPEN DUB_LEFT_OPEN ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL 
+%token PIPE GT DGT LT ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL 
 %nonassoc ELSE
-%expect 1
+%expect 5
 %%
 
 start: command EOL  { return 0; };
@@ -119,20 +119,51 @@ io: PIPE { //printf("PIPE |\n");
           		  cmdTab[numTabCmds++] = insertCmd;
                 lastPipePos = numTabCmds - 1;
           	  } 
-	 };
+	        } 
+
+    | GT VALUE {    reInitCurCmd(true); ++numIO;
+              insertCmd.name = ">"; 
+              insertCmd.args[0] = insertCmd.name;
+              insertCmd.outFd = open($2, O_WRONLY | O_CREAT ,0755);
+              if(swapping == true){
+                cmdTab[tempNumTabCmds++] = insertCmd;
+              }else{
+                cmdTab[numTabCmds++] = insertCmd;
+              } 
+          }
+
+    | DGT VALUE {   reInitCurCmd(true); ++numIO;
+              insertCmd.name = ">>"; 
+              insertCmd.args[0] = insertCmd.name;
+              insertCmd.outFd = open($2, O_WRONLY | O_APPEND | O_CREAT,0755);
+              if(swapping == true){
+                cmdTab[tempNumTabCmds++] = insertCmd;
+              }else{
+                cmdTab[numTabCmds++] = insertCmd;
+              } 
+          }
+
+    | LT VALUE {   reInitCurCmd(true); ++numIO;
+              insertCmd.name = "<"; 
+              insertCmd.args[0] = insertCmd.name;
+              insertCmd.inFd = open($2, O_RDONLY, 0); 
+              if(swapping == true){
+                cmdTab[tempNumTabCmds++] = insertCmd;
+              }else{
+                cmdTab[numTabCmds++] = insertCmd;
+              } 
+          }
+
+    | ERROR_CMD VALUE{   reInitCurCmd(true); ++numIO;
+                    insertCmd.name = "<"; 
+                    insertCmd.args[0] = insertCmd.name;
+                    insertCmd.errFd = open($2, O_WRONLY | O_APPEND | O_CREAT,0755); 
+                    if(swapping == true){
+                      cmdTab[tempNumTabCmds++] = insertCmd;
+                    }else{
+                      cmdTab[numTabCmds++] = insertCmd;
+                    }  
+                };
 
 %%
 
-/*
-COMMAND OPTION VALUE PIPE COMMAND VALUE PIPE COMMAND
-
-COMMAND axis
-        axis inter
-             OPTION
-        axis inter
-             VALUE
-        axis inter
-             PIPE
-        axis
-        COMMAND
-*/

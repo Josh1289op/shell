@@ -48,6 +48,7 @@ void execute_pipe();
 int aliasChecker();
 void printTable();
 void concatenate_string(char *original, char *add);
+int cmdFromFile(char*);
 
 
 //Initialization 

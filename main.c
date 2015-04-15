@@ -5,8 +5,11 @@ extern int yydebug;
 
 void main(int argc, char **argv, char** environ) {
 
-  init(environ);
+  	init(environ);
 	while(1){
+		if(cmdFromFile(argv[1])){
+			printf("argv[1]: %s\n", argv[1]);
+		}
 		prompt();
 		int CMD = getCommand();
 		printf("----------\n");
@@ -39,6 +42,23 @@ void main(int argc, char **argv, char** environ) {
 		}
 		reInitCurCmd(false);
 	}
+}
+
+int cmdFromFile(char* inputFileName) {
+	if(inputFileName == NULL) return false;
+	FILE *ifp;
+	char *mode = "r";
+
+	ifp = fopen(inputFileName, mode);
+	
+	if (ifp == NULL) {
+		errorCode = 8;
+		hasErrors = true;
+		handle_errors();
+ 	 	return false;
+	}
+
+	return true;
 }
 
 int aliasChecker(){
@@ -515,6 +535,9 @@ void handle_errors(){
 			exit(1);
 			break;
 
+		case 8:
+			fprintf(stderr, "Error: input file not found.\n");
+			break;
 
 	}
 

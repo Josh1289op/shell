@@ -43,3 +43,17 @@ debugMem: test.l test.y
 	bison -d test.y
 	gcc lex.yy.c test.tab.c main.c -o asShell -s
 	valgrind ./asShell
+	
+runFNF: test.l test.y
+	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
+	flex test.l
+	bison -d test.y
+	gcc lex.yy.c test.tab.c main.c -o asShell -g
+	./asShell hey.txt
+	
+runFF: test.l test.y
+	rm -f *o asShell test.tab.h test.tab.c lex.yy.c
+	flex test.l
+	bison -d test.y
+	gcc lex.yy.c test.tab.c main.c -o asShell -g
+	./asShell testCases.txt	

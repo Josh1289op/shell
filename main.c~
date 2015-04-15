@@ -264,6 +264,8 @@ void init_Scanner_Parser(){
 	//	pipeFd[i] = NULL;
 	//}
 
+	doWildcard = false;	
+
 	numPipes = 0; pipePos = 0; lastPipePos = 0;	pipePidPos = 0; hasErrors = false; errorCode = 0;
 	io[0] = false;
 	io[1] = false;
@@ -567,11 +569,6 @@ void execute_pipe(){
 	    			dup2(curCmd->outFd, STDOUT_FILENO);
 	    		}
 	    			if(io[1] || io[2]) close(curCmd->outFd);
-	    			if(io[3]) {
-		    			curCmd->errFd = ioFd[3];
-		    			dup2(curCmd->errFd, STDERR_FILENO);
-	    			}
-	    			if(io[3]) close(curCmd->errFd);
 
 				close(INPUT);
 				dup(pipeFd[p - 1][INPUT]);
@@ -587,6 +584,12 @@ void execute_pipe(){
 				close(pipeFd[pc][INPUT]);
 				close(pipeFd[pc][OUTPUT]);
 			}	
+			
+			if(io[3]) {
+	    			curCmd->errFd = ioFd[3];
+	    			dup2(curCmd->errFd, STDERR_FILENO);
+    			}
+    			if(io[3]) close(curCmd->errFd);
 	
 			execvp( cmdTab[cmdTabPos - 1].name, cmdTab[cmdTabPos - 1].args );
 			errorCode = 6;

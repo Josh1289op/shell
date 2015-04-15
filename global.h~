@@ -5,12 +5,13 @@
 #include <fcntl.h>         /* defines options flags */
 #include <sys/types.h>     /* defines types used by sys/stat.h */
 #include <sys/stat.h>      /* defines S_IREAD & S_IWRITE  */
+#include <glob.h>
 
 #define KNRM  "\x1B[0m"
 #define KGRY  "\x1B[37m"
 #define KCYN  "\x1B[36m"
 #define IRed  "\x1B[1;31m"
-#define IRedU "\x1B[4;37m"
+#define IRedU "\x1B[37m"
 #define IOReset "\x1B[0m"
 
 #define OK 0
@@ -50,7 +51,12 @@ void execute_pipe();
 int aliasChecker();
 void printTable();
 void concatenate_string(char *original, char *add);
+int cmdFromFile(char*);
+void runShell();
+int ioRedir();
 
+char parseInput[1024];
+int runPrompt;
 
 //Initialization 
 typedef struct _CMD {
@@ -73,6 +79,8 @@ cmd* curCmd;
 int numTabCmds;
 int cmdTabPos;
 
+int io[4]; int ioFd[4]; 
+int numIO;
 //Using these variables to keep track of cmdTab organization for swamping aliases
 int swapping;
 int tempNumTabCmds;

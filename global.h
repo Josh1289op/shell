@@ -5,6 +5,7 @@
 #include <fcntl.h>         /* defines options flags */
 #include <sys/types.h>     /* defines types used by sys/stat.h */
 #include <sys/stat.h>      /* defines S_IREAD & S_IWRITE  */
+#include <glob.h>
 
 #define KNRM  "\x1B[0m"
 #define KGRY  "\x1B[37m"
@@ -120,4 +121,5 @@ int lastPipePos;
 int errorCode;
 int hasErrors;
 
+int doWildcard;
 

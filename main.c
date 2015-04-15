@@ -264,6 +264,8 @@ void init_Scanner_Parser(){
 	//	pipeFd[i] = NULL;
 	//}
 
+	doWildcard = false;	
+
 	numPipes = 0; pipePos = 0; lastPipePos = 0;	pipePidPos = 0; hasErrors = false; errorCode = 0;
 	io[0] = false;
 	io[1] = false;

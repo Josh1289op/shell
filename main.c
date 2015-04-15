@@ -68,7 +68,7 @@ int cmdFromFile(char* inputFileName) {
 	runPrompt = false;
     while (fgets (parseInput, 1024, fin)) {
     	printf("\n%s", parseInput);
-        my_string_buffer = yy_scan_string(parseInput);
+        YY_BUFFER_STATE my_string_buffer = yy_scan_string(parseInput);
 		runShell();
 		yy_delete_buffer(my_string_buffer);
 		yylex_destroy();
@@ -519,7 +519,7 @@ void execute_pipe(){
 
 int understand_errors(){
 	//printf("understand_errors()\n");
-	printf("command recieved: \"%s\"\n", insertCmd.name);
+	printf("YYParse failed: command recieved: \"%s\"\n", insertCmd.name);
 	return ERROR;
 }
 

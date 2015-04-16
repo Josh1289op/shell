@@ -19,15 +19,15 @@ void runShell() {
 	do {
 		if(runPrompt) prompt();
 		int CMD = getCommand();
-		if(runPrompt)printf("----------\n");
-		if(runPrompt)printTable();
+		//if(runPrompt)printf("----------\n");
+		//if(runPrompt)printTable();
 		CMD = aliasChecker();
-		if(runPrompt)printf("----------\n");
-		if(runPrompt)printTable();
-		if(runPrompt)printf("----------\n");
+		//if(runPrompt)printf("----------\n");
+		//if(runPrompt)printTable();
+		//if(runPrompt)printf("----------\n");
 		switch(CMD){
 			case BYE:
-				printf("CMD case: BYE\n");
+				//printf("CMD case: BYE\n");
 				exit(0);
 			case ERROR:
 				//printf("CMD case: ERROR\n");
@@ -101,14 +101,14 @@ int aliasChecker(){
 				lastAliasUsed = pos;
 				//printTable();
 				reYYPARSEString = alsTab[aliasPos].alsValue;
-				printf("%s", reYYPARSEString);
+				//printf("%s", reYYPARSEString);
 				int argPosRecat;
 				for(argPosRecat = 1; argPosRecat < cmdTab[pos].numArgs; ++argPosRecat){
-					printf("%d", argPosRecat);
+					//printf("%d", argPosRecat);
 					concatenate_string(reYYPARSEString, " ");
 					concatenate_string(reYYPARSEString, cmdTab[pos].args[argPosRecat]);
 				}
-				printf("%s", reYYPARSEString);
+				//printf("%s", reYYPARSEString);
 
 				YY_BUFFER_STATE my_string_buffer = yy_scan_string(reYYPARSEString);
     				int my_parse_result  = yyparse();
@@ -121,20 +121,20 @@ int aliasChecker(){
 				for(i = 0; i < pos + 1; ++i){
 					tempCmdTab[i] = cmdTab[i];
 				}
-				printf("After - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
-				printTempTable(tempCmdTab);
+				//printf("After - Entries: %d & Temp Entries: %d\n",numTabCmds, tempNumTabCmds);
+				//printTempTable(tempCmdTab);
 				int j = 0;
 				int tempAliasPos = pos;
 				//Move all the new cmds where they go in the table
 				for(j = numTabCmds; j < tempNumTabCmds; ++j){
 					tempCmdTab[tempAliasPos++] = cmdTab[j];
 				}
-				printTempTable(tempCmdTab);
+				//printTempTable(tempCmdTab);
 				//Move the rest of the cmds below the new cmds
 				for(i; i < numTabCmds; ++i){
 					tempCmdTab[tempAliasPos++] = cmdTab[i];
 				}
-				printTempTable(tempCmdTab);
+				//printTempTable(tempCmdTab);
 				//Copy the new table over to the old table
 				reInitCurCmd(false);
 				for(i = 0; i < tempNumTabCmds - 1; ++i){

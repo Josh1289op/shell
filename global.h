@@ -5,6 +5,8 @@
 #include <fcntl.h>         /* defines options flags */
 #include <sys/types.h>     /* defines types used by sys/stat.h */
 #include <sys/stat.h>      /* defines S_IREAD & S_IWRITE  */
+#include <glob.h>
+#include <termios.h>
 
 #define KNRM  "\x1B[0m"
 #define KGRY  "\x1B[37m"
@@ -119,5 +121,28 @@ int lastPipePos;
 // Error Handling Variables
 int errorCode;
 int hasErrors;
+
+int doWildcard;
+
+
+
+static struct termios old, new;
+void initTermios(int echo);
+void resetTermios(void);
+char getch_(int echo);
+char getch(void);
+char getche(void);
+
+/*
+  char c;
+  printf("(getche example) please type a letter: ");
+  c = getche();
+  printf("\nYou typed: %c\n", c);
+  printf("(getch example) please type a letter...");
+  c = getch();
+  printf("\nYou typed: %c\n", c);
+  return 0;
+*/
+
 
 

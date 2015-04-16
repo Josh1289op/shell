@@ -17,9 +17,9 @@ int yywrap()
 
 %}
 
-%token PIPE GT DGT LT ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL 
+%token PIPE GT DGT LT ERROR_CMD COMMAND VALUE OPTION OVAR CVAR EOL STDOUT_ERROR
 %nonassoc ELSE
-%expect 5
+%expect 6
 %%
 
 start: command EOL  { return 0; };
@@ -74,7 +74,6 @@ command:  { insertCmd.name = "empty"; insertCmd.args[0] = insertCmd.name; cmdTab
 			YYACCEPT;
 			};
       | OVAR VALUE CVAR { printf("Found Variable here: %s = %s\n", $2, getenv ($2));
-			init(environment); 
 			YY_BUFFER_STATE my_string_buffer = yy_scan_string(getenv($2));
 			int my_parse_result  = yyparse();
 			yy_delete_buffer(my_string_buffer);
@@ -155,9 +154,19 @@ io: PIPE { //printf("PIPE |\n");
           }
 
     | ERROR_CMD VALUE{   reInitCurCmd(true); ++numIO;
-                    insertCmd.name = "<"; 
+                    insertCmd.name = "2>"; 
                     insertCmd.args[0] = insertCmd.name;
                     insertCmd.errFd = open($2, O_WRONLY | O_APPEND | O_CREAT,0755); 
+                    if(swapping == true){
+                      cmdTab[tempNumTabCmds++] = insertCmd;
+                    }else{
+                      cmdTab[numTabCmds++] = insertCmd;
+                    }  
+                }
+     | STDOUT_ERROR {   reInitCurCmd(true); ++numIO;
+                    insertCmd.name = "2>&1"; 
+                    insertCmd.args[0] = insertCmd.name;
+                    insertCmd.errFd = -2; 
                     if(swapping == true){
                       cmdTab[tempNumTabCmds++] = insertCmd;
                     }else{

@@ -18,6 +18,16 @@ void runShell() {
 
 	do {
 		if(runPrompt) prompt();
+
+		/*while(true){
+			char c;
+			c = getch();
+			printf("%c", c);
+			if(c == '') {
+				break;
+			}
+		}*/	
+
 		int CMD = getCommand();
 		//if(runPrompt)printf("----------\n");
 		//if(runPrompt)printTable();
@@ -79,7 +89,7 @@ int cmdFromFile(char* inputFileName) {
 }
 
 int aliasChecker(){
-	//printf("Number of Aliases: %d\n", numTabAls);
+	printf("Number of Aliases: %d\n", numTabAls);
 	lastAliasUsed = -1;
 	int pos = 0; int argPos = 0; int aliasPos = 0;
 	for(pos; pos < numTabCmds; ++pos){
@@ -264,6 +274,8 @@ void init_Scanner_Parser(){
 	//	pipeFd[i] = NULL;
 	//}
 
+	doWildcard = false;	
+
 	numPipes = 0; pipePos = 0; lastPipePos = 0;	pipePidPos = 0; hasErrors = false; errorCode = 0;
 	io[0] = false;
 	io[1] = false;
@@ -332,6 +344,7 @@ void setBuiltins(){
 			|| strcmp(temp->name,">") == 0
 			|| strcmp(temp->name,">>") == 0
 			|| strcmp(temp->name,"2>") == 0
+			|| strcmp(temp->name,"2>&1") == 0
 			|| strcmp(temp->name,"exit") == 0) 
 		{
 			temp->isBuiltin = true;
@@ -353,6 +366,8 @@ int ioRedir(){
 		} else if (strcmp(temp->name,">>") == 0) {
 			io[2] = true; ioFd[2] = temp->outFd;
 		} else if (strcmp(temp->name,"2>") == 0) {
+			io[3] = true; ioFd[3] = temp->errFd;
+		} else if (strcmp(temp->name,"2>&1") == 0) {
 			io[3] = true; ioFd[3] = temp->errFd;
 		}
 	}
@@ -456,7 +471,9 @@ int do_it() {
 	      	//io
 	    } else if(strcmp(curCmd->name, "2>") == 0){
 	      	//io
-	    }else if(strcmp(curCmd->name, "alias") == 0){
+	    } else if(strcmp(curCmd->name,"2>&1") == 0){
+	      	//io
+	    } else if(strcmp(curCmd->name, "alias") == 0){
 		
 		if(curCmd->args[1] == NULL || curCmd->args[2] == NULL){
 			errorCode = 1;
@@ -482,7 +499,6 @@ int do_it() {
 }
 
 void execute_command(){
-	//CHECK SLIDES FOR MORE CODE EXAMPLES ON THIS METHOD/////////////////////////////
 
 	// Handle  command execution, pipelining, i/o redirection, and background processing.
 	// Utilize a command table whose components are plugged in during parsing by yacc.
@@ -491,19 +507,29 @@ void execute_command(){
 	switch(pids = fork()) {
 		case 0:
 			if(io[0]) dup2(curCmd->inFd, STDIN_FILENO);
-    		if(io[1] || io[2]) {
-    			if(io[1]) curCmd->outFd = ioFd[1];
-    			if(io[2]) curCmd->outFd = ioFd[2];
-    			
-    			dup2(curCmd->outFd, STDOUT_FILENO);
-    		}
-    		if(io[3]) {
-    			curCmd->errFd = ioFd[3];
-    			dup2(curCmd->errFd, STDERR_FILENO);
-    		}
-    		if(io[0]) close(curCmd->inFd);
-    		if(io[1] || io[2]) close(curCmd->outFd);
-    		if(io[3]) close(curCmd->errFd);
+    			if(io[1] || io[2]) {
+	    			if(io[1]) curCmd->outFd = ioFd[1];
+	    			if(io[2]) curCmd->outFd = ioFd[2];
+	    			
+	    			dup2(curCmd->outFd, STDOUT_FILENO);
+    			}
+	    		if(io[3]) {
+	    			curCmd->errFd = ioFd[3];
+				if(curCmd->errFd == -2){
+					dup2(1, 2);
+				} else {
+	    				dup2(curCmd->errFd, STDERR_FILENO);
+				}
+	    		}
+	    		if(io[0]) close(curCmd->inFd);
+	    		if(io[1] || io[2]) close(curCmd->outFd);
+	    		if(io[3]) {
+				if(curCmd->errFd == -2){
+					close(1);
+				} else {
+	    				close(curCmd->errFd);
+				}
+			}
 
 			status = execvp(curCmd->name, curCmd->args);
 			if(status){
@@ -552,12 +578,7 @@ void execute_pipe(){
 	    			
 	    			dup2(curCmd->outFd, STDOUT_FILENO);
 	    		}
-	    		if(io[1] || io[2]) close(curCmd->outFd);
-	    		if(io[3]) {
-	    			curCmd->errFd = ioFd[3];
-	    			dup2(curCmd->errFd, STDERR_FILENO);
-	    		}
-	    		if(io[3]) close(curCmd->errFd);
+	    			if(io[1] || io[2]) close(curCmd->outFd);
 
 				close(INPUT);
 				dup(pipeFd[p - 1][INPUT]);
@@ -573,6 +594,12 @@ void execute_pipe(){
 				close(pipeFd[pc][INPUT]);
 				close(pipeFd[pc][OUTPUT]);
 			}	
+			
+			if(io[3]) {
+	    			curCmd->errFd = ioFd[3];
+	    			dup2(curCmd->errFd, STDERR_FILENO);
+    			}
+    			if(io[3]) close(curCmd->errFd);
 	
 			execvp( cmdTab[cmdTabPos - 1].name, cmdTab[cmdTabPos - 1].args );
 			errorCode = 6;
@@ -704,3 +731,40 @@ void concatenate_string(char *original, char *add)
    *original = '\0';
 }
 
+/* Initialize new terminal i/o settings */
+void initTermios(int echo) 
+{
+  tcgetattr(0, &old); /* grab old terminal i/o settings */
+  new = old; /* make new settings same as old settings */
+  new.c_lflag &= ~ICANON; /* disable buffered i/o */
+  new.c_lflag &= echo ? ECHO : ~ECHO; /* set echo mode */
+  tcsetattr(0, TCSANOW, &new); /* use these new terminal i/o settings now */
+}
+
+/* Restore old terminal i/o settings */
+void resetTermios(void) 
+{
+  tcsetattr(0, TCSANOW, &old);
+}
+
+/* Read 1 character - echo defines echo mode */
+char getch_(int echo) 
+{
+  char ch;
+  initTermios(echo);
+  ch = getchar();
+  resetTermios();
+  return ch;
+}
+
+/* Read 1 character without echo */
+char getch(void) 
+{
+  return getch_(0);
+}
+
+/* Read 1 character with echo */
+char getche(void) 
+{
+  return getch_(1);
+}

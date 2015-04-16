@@ -4,7 +4,7 @@
 #define YYSTYPE char*
 #endif
 #include "test.tab.h"
-
+extern preCmd;
 
 int line_num = 1;
 %}
